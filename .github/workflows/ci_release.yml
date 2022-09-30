@@ -68,6 +68,7 @@ jobs:
     needs: changes
     runs-on: ubuntu-latest
     if: ${{ (needs.changes.outputs.updates == 'true' && github.event_name == 'schedule') || github.event_name == 'workflow_dispatch' }}
+    permissions: "write-all"
     steps:
       - uses: actions/checkout@v3
       - name: Version Release
