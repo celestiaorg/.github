@@ -1,0 +1,50 @@
+name: "Publish Image to Docker Hub"
+description: |
+  Build and push the latest docker image to docker hub.
+  Four images will be pushed, `latest` and three semver images.
+  One will be the full semver image (major.minor.patch).
+  The second will be the major.minor version.
+  Third one will be just the major version.
+inputs:
+  docker_username:
+    required: true
+    description: "secrets.DOCKER_USERNAME"
+  docker_password:
+    required: true
+    description: "secrets.DOCKER_PASSWORD"
+  docker_repository:
+    required: true
+    description: "name of the docker repository"
+  semver_version:
+    required: true
+    description: "The semver version to release (vX.X.X)"
+
+# Define action steps
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ inputs.docker_username }}
+        password: ${{ inputs.docker_password }}
+
+    - name: Generate Docker Versions
+      id: docker_version
+      uses: SkynetLabs/.github/.github/actions/major-minor-version@master
+      with:
+        version: ${{ inputs.semver_version }}
+        docker_repository: ${{ inputs.docker_repository }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v3
+      with:
+        push: true
+        tags: |
+          ${{ steps.docker_version.outputs.latest_image_tag }}
+          ${{ steps.docker_version.outputs.semver_version_image_tag }}
+          ${{ steps.docker_version.outputs.major_minor_version_image_tag }}
+          ${{ steps.docker_version.outputs.major_version_image_tag }}

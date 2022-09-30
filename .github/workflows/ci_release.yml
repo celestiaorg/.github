@@ -1,0 +1,94 @@
+# This workflow is an example of a combination of automatic and manual release.
+# The triggers are:
+#   - Push
+#   - Schedule
+#   - Workflow Dispatch
+#
+# This workflow uses the `if` conditions to control when the CI runs versus when
+# a release is also created.
+#
+# The CI runs when pull requests are created and also when code is merged into
+# main, i.e. push events to main.
+#
+# It will run nightly at 1:15am, on those nightly runs, if there have been
+# changes since the last release, it will also auto bump the patch release.
+#
+# Lastly, it will trigger from manually workflow dispatches.
+name: CI and Release
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  schedule:
+    # Run daily at 1:15am
+    - cron: "15 1 * * *"
+  workflow_dispatch:
+    # Inputs the workflow accepts.
+    inputs:
+      version:
+        # Friendly description to be shown in the UI instead of 'name'
+        description: "Semver type of new version (major / minor / patch)"
+        # Input has to be provided for the workflow to run
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  # Example for docker file linting
+  # hadolint:
+  #   uses: celestiaorg/.github/.github/workflows/reusable_dockerfile_lint.yml@master
+
+  yamllint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/yamllint
+
+  # Check if there were any changes since the last tag if this is not a push
+  # event
+  changes:
+    needs: [yamllint]
+    runs-on: ubuntu-latest
+    outputs:
+      updates: ${{steps.changes.outputs.any == 'true'}}
+    if: ${{ github.event_name != 'push' }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Required due to the weg Git works, without it this action won't be able to find any or the correct tags
+      - uses: ./.github/actions/changes-since-last-tag
+
+  # Make a release if
+  # - there were changes and this is a scheduled job
+  # - This is a manually trigger job, i.e. workflow_dispatch
+  release:
+    needs: changes
+    runs-on: ubuntu-latest
+    if: ${{ (needs.changes.outputs.updates == 'true' && github.event_name == 'schedule') || github.event_name == 'workflow_dispatch' }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Version Release
+        uses: ./.github/actions/version-release
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          version-bump: ${{inputs.version}}
+
+  # Example for docker builds
+  # docker:
+  #   needs: release
+  #   name: Build and Push Docker image to Docker Hub
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Check out the repo
+  #       uses: actions/checkout@v3
+
+  #     - uses: celestiaorg/.github/.github/actions/docker-publish@master
+  #       with:
+  #         docker_username: ${{ secrets.DOCKER_USERNAME}}
+  #         docker_password: ${{ secrets.DOCKER_PASSWORD}}
+  #         docker_repository: <update>
+  #         semver_version: ${{ needs.release.outputs.new_version }}

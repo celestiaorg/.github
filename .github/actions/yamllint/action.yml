@@ -1,0 +1,17 @@
+# Define action name, description, and inputs
+name: "Yamllint"
+description: "Lint yaml code with yamllint"
+
+# Define action steps
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v2
+      with:
+        python-version: "3.x"
+        architecture: x64
+
+    - run: pip install yamllint
+      shell: bash
+    - run: yamllint --no-warnings .
+      shell: bash

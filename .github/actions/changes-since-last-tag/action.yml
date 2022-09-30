@@ -1,0 +1,26 @@
+# Define action name, description, and inputs
+name: "Changes Since Last Tag"
+description: "Check for changes to any of the files since the last tag"
+inputs:
+  working-directory:
+    required: false
+    description: "Working directory"
+    default: "."
+
+# Define action steps
+runs:
+  using: "composite"
+  steps:
+    - name: "Get Previous tag"
+      id: previoustag
+      uses: "WyriHaximus/github-action-get-previous-tag@v1"
+      with:
+        fallback: 0.0.1 # Optional fallback tag to use when no tag can be found
+    # Use paths-filter to determine which paths have changes
+    # https://github.com/dorny/paths-filter
+    - uses: dorny/paths-filter@v2
+      id: changes
+      with:
+        base: ${{ steps.previoustag.outputs.tag }}
+        filters: |
+          any: "**"

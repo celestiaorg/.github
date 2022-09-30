@@ -1,0 +1,24 @@
+name: "Docker Image Versions"
+description: |
+  Generate image version tags for docker images by removing the `v` prefix and
+  returning major, minor and patch versions along with a latest tag.
+inputs:
+  docker_repository:
+    description: "Docker Repository"
+    required: true
+  version:
+    description: "Semver version vX.X.X"
+    required: true
+outputs:
+  latest_image_tag:
+    description: "The latest docker image tag"
+  major_version_image_tag:
+    description: "The major semver docker image version tag X"
+  major_minor_version_image_tag:
+    description: "The major minor semver docker image version tag X.X"
+  semver_version_image_tag:
+    description: "The semver docker image version tag X.X.X"
+
+runs:
+  using: "node16"
+  main: "dist/index.js"
