@@ -22,11 +22,20 @@ request (i.e. adding labels). Teams are given write access to the repositories
 that they are responsible for working on. For example, the `celestia-node` team
 would have write access to the `celestia-node` repository.
 
+### Codeowners
+
+All production repos must use Codeowners. Codeowners are typically the team
+leads and/or engineering leadership members. 
+
 ### .github
 
 Celestia utilizes the organization's `.github` repository. This repository is
 used to store common organization level content like Github actions, issue
 templates, PR templates, etc.
+
+### Repository Settings
+
+...
 
 ## Development
 
@@ -37,7 +46,23 @@ in order to submit a PR. If you have write access to a repository, because you
 are a member of that sub team, then you can push your development branches
 directly to the repository.
 
+### ADRs
+
+For architectural changes or improvements, Celestia uses Architecture Decision
+Record (ADRs) to flush out the design scope. These live in the code under
+`docs/adr`. PRs are used to open new ADRs for approval. 
+
+### Issues
+
+When proposing new work, an issue should be created. Issues can be created for
+bugs, feature requests, improvements based on ADRs, etc.
+
 ### Pull Requests
+
+Before opening a PR, make sure that the scope of work was previously
+communicated, either via an ADR or an issue. Submitting code that has no
+background context is likely to be rejected because the implication and design
+has not been properly discussed.
 
 Celestia has a culture of prioritizing PRs. This prioritization focuses on
 unblocking others and finishing work before starting new work. 
@@ -63,8 +88,4 @@ All repos have the following branch protections requirements:
 - Status checks must be passing
 - Conversations must be resolved
 
-### Codeowners
-
-All production repos must use Codeowners. Codeowners are typically the team
-leads and/or engineering leadership members. 
 
