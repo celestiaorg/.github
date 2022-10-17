@@ -28,7 +28,14 @@ Celestia utilizes the organization's `.github` repository. This repository is
 used to store common organization level content like Github actions, issue
 templates, PR templates, etc.
 
-## Development 
+## Development
+
+### What the Fork
+
+The default development flow is to fork the repository that you are working on
+in order to submit a PR. If you have write access to a repository, because you
+are a member of that sub team, then you can push your development branches
+directly to the repository.
 
 ### Pull Requests
 
