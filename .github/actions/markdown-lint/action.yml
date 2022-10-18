@@ -13,5 +13,5 @@ runs:
         node-version: 18
     - run: npm install -g markdownlint-cli@0.32.1
       shell: bash
-    - run: markdownlint --config "{{ inputs.config_file_path }}" **/*.md
+    - run: markdownlint --config ${{ inputs.config_file_path }} **/*.md
       shell: bash
