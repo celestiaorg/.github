@@ -6,6 +6,5 @@ on:
 
 jobs:
   stale-PRs:
-    uses: ./.github/workflows/reusable_stale.yml@main
-    with:
-      github-token: ${{ secrets.GITHUB_TOKEN }}
+    uses: ./.github/workflows/reusable_stale.yml
+    secrets: inherit
