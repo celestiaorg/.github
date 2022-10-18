@@ -1,0 +1,17 @@
+name: "Markdown Lint"
+description: "Lint markdown files with markdownlint"
+inputs:
+  config_file_path:
+    required: false
+    description: "relative path to a .markdownlint.yaml config file"
+    default: ".markdownlint.yaml"
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 18
+    - run: npm install -g markdownlint-cli@0.32.1
+      shell: bash
+    - run: markdownlint --config ${{ inputs.config_file_path }} **/*.md
+      shell: bash
