@@ -1,14 +1,14 @@
 # Contributing to Celestia
 
-Welcome and Thank You for contributing to building Celestia, the first modular
+Welcome and thank you for contributing to building Celestia, the first modular
 blockchain network. 
 
-In this guide you will find information about how Celestia manages the
-`CelestiaOrg` Github as well as expectation around our Engineering Standards.
+In this guide, you will find information about how Celestia manages the
+`CelestiaOrg` Github as well as expectations around our engineering standards.
 
 ## Github Management
 
-The `CelestiaOrg` Github uses teams to manage access to the organization and
+The `celestiaorg` Github uses teams to manage access to the organization and
 its repositories. Members of the Celestia core team and key contributors are
 added to the Github team that aligns with the scope of work they perform. For
 example, those working on the `celestia-node` repository are added to the
@@ -18,7 +18,7 @@ example, those working on the `celestia-node` repository are added to the
 
 By default, all teams have Triage access to all repositories in the
 `CelestiaOrg` Github. This allows for anyone to help manage issues and pull
-request (i.e. adding labels). Teams are given write access to the repositories
+requests (i.e. adding labels). Teams are given write access to the repositories
 that they are responsible for working on. For example, the `celestia-node` team
 would have write access to the `celestia-node` repository.
 
@@ -75,9 +75,9 @@ closing out the existing PR.
 
 As a reviewer, it is your responsibility to be providing prompt, action oriented
 reviews. Clearing out your requests reviews should be a daily activity. Action
-oriented reviews means that there is a clear action step for the developer of
+oriented reviews mean that there is a clear action step for the developer of
 the PR to take in order to get the PR approved and merged. Open ended questions
-and statements so be avoided. Being clear when a comment is a blocking change,
+and statements should be avoided. Being clear when a comment is a blocking change,
 okay to be a follow up, or just a personal preference enables developers to
 effectively implement the feedback on a PR.  
 
