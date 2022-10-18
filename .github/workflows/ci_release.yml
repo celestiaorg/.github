@@ -1,7 +1,6 @@
 # This workflow is an example of a combination of automatic and manual release.
 # The triggers are:
 #   - Push
-#   - Schedule
 #   - Workflow Dispatch
 #
 # This workflow uses the `if` conditions to control when the CI runs versus when
@@ -10,9 +9,6 @@
 # The CI runs when pull requests are created and also when code is merged into
 # main, i.e. push events to main.
 #
-# It will run nightly at 1:15am, on those nightly runs, if there have been
-# changes since the last release, it will also auto bump the patch release.
-#
 # Lastly, it will trigger from manually workflow dispatches.
 name: CI and Release
 on:
@@ -20,9 +16,6 @@ on:
     branches:
       - main
   pull_request:
-  schedule:
-    # Run daily at 1:15am
-    - cron: "15 1 * * *"
   workflow_dispatch:
     # Inputs the workflow accepts.
     inputs:
@@ -48,26 +41,19 @@ jobs:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/yamllint
 
-  # Check if there were any changes since the last tag if this is a scheduled event
-  changes:
-    needs: [yamllint]
+  markdown-lint:
     runs-on: ubuntu-latest
-    outputs:
-      updates: ${{steps.changes.outputs.any == 'true'}}
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 # Required due to the weg Git works, without it this action won't be able to find any or the correct tags
-      - uses: ./.github/actions/changes-since-last-tag
+      - uses: ./.github/actions/markdown-lint
 
   # Make a release if
   # - there were changes and this is a scheduled job
   # - This is a manually trigger job, i.e. workflow_dispatch
   release:
-    needs: changes
+    needs: [yamllint, markdown-lint]
     runs-on: ubuntu-latest
-    if: ${{ (needs.changes.outputs.updates == 'true' && github.event_name == 'schedule') || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     permissions: "write-all"
     steps:
       - uses: actions/checkout@v3
