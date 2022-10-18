@@ -9,10 +9,12 @@ Screen shots and/or asciinema recordings are very helpful.
 -->
 
 ## Checklist
+
 Review and complete the checklist to ensure that the PR is complete before assigned to an approver.
- - [ ] All new methods or updated methods have clear docstrings
- - [ ] Testing added or updated for new methods
- - [ ] Approriate documentation updated
+
+- [ ] All new methods or updated methods have clear docstrings
+- [ ] Testing added or updated for new methods
+- [ ] Approriate documentation updated
 
 ## Issues Closed
 <!--
