@@ -1,10 +1,10 @@
 # Contributing to Celestia
 
 Welcome and thank you for contributing to building Celestia, the first modular
-blockchain network. 
+blockchain network.
 
-In this guide, you will find information about how Celestia manages the
-`CelestiaOrg` Github as well as expectations around our engineering standards.
+In this guide, you will find information about how the Celestia team manages the
+`celestiaorg` Github as well as expectations around our engineering standards.
 
 ## Github Management
 
@@ -12,12 +12,12 @@ The `celestiaorg` Github uses teams to manage access to the organization and
 its repositories. Members of the Celestia core team and key contributors are
 added to the Github team that aligns with the scope of work they perform. For
 example, those working on the `celestia-node` repository are added to the
-`celestia-node` team. 
+`celestia-node` team.
 
 ### Permissions
 
-By default, all teams have Triage access to all repositories in the
-`CelestiaOrg` Github. This allows for anyone to help manage issues and pull
+By default, all teams have `Triage` access to all repositories in the
+`celestiaorg` Github. This allows for anyone to help manage issues and pull
 requests (i.e. adding labels). Teams are given write access to the repositories
 that they are responsible for working on. For example, the `celestia-node` team
 would have write access to the `celestia-node` repository.
@@ -25,17 +25,34 @@ would have write access to the `celestia-node` repository.
 ### Codeowners
 
 All production repos must use Codeowners. Codeowners are typically the team
-leads and/or engineering leadership members. 
+leads and/or engineering leadership members.
 
 ### .github
 
-Celestia utilizes the organization's `.github` repository. This repository is
-used to store common organization level content like Github actions, issue
-templates, PR templates, etc.
+The Celestia team utilizes the organization's `.github` repository. This
+repository is used to store common organization level content like Github
+actions, issue templates, PR templates, etc.
 
 ### Repository Settings
 
-...
+The following is a list of key settings that should be enabled on all production
+repositories:
+
+**Enabled:**
+
+- Issues
+- Projects
+- Perserve this repository
+- Allow squash merging
+  - Default to pull request title
+- Always suggest updating pull request branches
+- Allow auto-merge
+- Automatically delete head branches
+
+**Disabled:**
+
+- Allow merge commits
+- Allow rebase merging
 
 ## Development
 
@@ -50,7 +67,7 @@ directly to the repository.
 
 For architectural changes or improvements, Celestia uses Architecture Decision
 Record (ADRs) to flush out the design scope. These live in the code under
-`docs/adr`. PRs are used to open new ADRs for approval. 
+`docs/adr`. PRs are used to open new ADRs for approval.
 
 ### Issues
 
@@ -64,8 +81,8 @@ communicated, either via an ADR or an issue. Submitting code that has no
 background context is likely to be rejected because the implication and design
 has not been properly discussed.
 
-Celestia has a culture of prioritizing PRs. This prioritization focuses on
-unblocking others and finishing work before starting new work. 
+The Celestia team has a culture of prioritizing PRs. This prioritization focuses
+on unblocking others and finishing existing work before starting new work.
 
 As a developer, you are responsible for ensuring your code gets merged. This
 means you should be verifying that the appropriate reviewers are assigned and
@@ -81,11 +98,10 @@ and statements should be avoided. Being clear when a comment is a blocking chang
 okay to be a follow up, or just a personal preference enables developers to
 effectively implement the feedback on a PR.  
 
-All repos have the following branch protections requirements:
+All production repos have the following branch protections requirements:
+
 - 2 approvals
 - Codeowner approval
 - New commits dismiss approvals
 - Status checks must be passing
 - Conversations must be resolved
-
-
