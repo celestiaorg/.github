@@ -43,6 +43,7 @@ repositories:
 - Issues
 - Projects
 - Perserve this repository
+- Allow merge commits **Forked Repos Only**
 - Allow squash merging
   - Default to pull request title
 - Always suggest updating pull request branches
@@ -51,7 +52,7 @@ repositories:
 
 **Disabled:**
 
-- Allow merge commits
+- Allow merge commits **Except Forked Repos**
 - Allow rebase merging
 
 ## Development
@@ -72,7 +73,9 @@ Record (ADRs) to flush out the design scope. These live in the code under
 ### Issues
 
 When proposing new work, an issue should be created. Issues can be created for
-bugs, feature requests, improvements based on ADRs, etc.
+bugs, feature requests, improvements based on ADRs, etc. Issue templates should
+be used whenever possible, but especially for bug reports, feature requests, and
+ADRs to ensure all the necessary information is captured. 
 
 ### Pull Requests
 
@@ -81,13 +84,14 @@ communicated, either via an ADR or an issue. Submitting code that has no
 background context is likely to be rejected because the implication and design
 has not been properly discussed.
 
-The Celestia team has a culture of prioritizing PRs. This prioritization focuses
-on unblocking others and finishing existing work before starting new work.
+The Celestia team has a culture of prioritizing the review of PRs. This
+prioritization focuses on unblocking others and finishing existing work before
+starting new work.
 
 As a developer, you are responsible for ensuring your code gets merged. This
 means you should be verifying that the appropriate reviewers are assigned and
 that you are responding to review comments promptly. When given the choice to
-start a new PR or work on closing out an existing PR, you should always choose
+start a new PR or work on closing out an existing PR, you should usually choose
 closing out the existing PR.
 
 As a reviewer, it is your responsibility to be providing prompt, action oriented
