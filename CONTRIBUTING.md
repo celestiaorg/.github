@@ -75,7 +75,7 @@ Record (ADRs) to flush out the design scope. These live in the code under
 When proposing new work, an issue should be created. Issues can be created for
 bugs, feature requests, improvements based on ADRs, etc. Issue templates should
 be used whenever possible, but especially for bug reports, feature requests, and
-ADRs to ensure all the necessary information is captured. 
+ADRs to ensure all the necessary information is captured.
 
 ### Pull Requests
 
