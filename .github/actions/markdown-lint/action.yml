@@ -7,7 +7,11 @@ inputs:
     default: ".markdownlint.yaml"
   folder_path:
     required: false
-    description: "Specific folder to link"
+    description: >
+      By default the github-action-markdown-link-check action checks for all
+      markdown files in this repo. Use this option to limit checks to only
+      specific folders. Use comma separated values for checking multiple
+      folders.
     default: "."
 
 runs:

@@ -1,7 +1,7 @@
 name: Daily
 on:
   schedule:
-    - cron: "0 1 * * *"
+    - cron: "0 1 * * *" # every day at 1 AM
   workflow_dispatch:
 
 jobs:
