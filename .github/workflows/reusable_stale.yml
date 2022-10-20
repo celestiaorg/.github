@@ -1,0 +1,33 @@
+name: "Close stale issues & pull requests"
+on:
+  workflow_call:
+    inputs:
+      days-before-close:
+        required: false
+        type: number
+        default: 7
+        description: "How long before a stale PR is closed (default 7 days)"
+      days-before-stale:
+        required: false
+        type: number
+        default: 30
+        description: "How long before a PR is marked as stale (default 30 days)"
+      exempt-pr-labels:
+        required: false
+        type: string
+        description: "Comma separated list of labels to ignore"
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v6
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          stale-pr-message: >
+            This pull request has been automatically marked as stale because it
+            has not had recent activity. It will be closed if no further
+            activity occurs. Thank you for your contributions.
+          days-before-stale: ${{ inputs.days-before-stale }}
+          days-before-close: ${{ inputs.days-before-close }}
+          exempt-pr-labels: ${{ inputs.exempt-pr-labels }}
