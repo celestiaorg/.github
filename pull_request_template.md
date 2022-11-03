@@ -28,7 +28,5 @@ PRs should be left in Draft until the below checklist is completed.
 - [ ] New and updated code has new and/or updated testing
 - [ ] PR is linked to appropriate project
 - [ ] CI is passing
-- [ ] Reviewers have been properly assigned
-- [ ] PR is self assigned
 - [ ] Visual proof for any user facing features like CLI or documentation updates
 - [ ] Linked issues closed with keywords
