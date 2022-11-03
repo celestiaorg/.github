@@ -11,7 +11,7 @@ first PR.
 
 <!-- 
 Please provide an explanation of the PR, including the apprioprate context,
-background, goal, and rationale. If there is an issues with this information,
+background, goal, and rationale. If there is an issue with this information,
 please provide a tl;dr and link the issue. 
 -->
 
@@ -26,7 +26,7 @@ PRs should be left in Draft until the below checklist is completed.
 -->
 
 - [ ] New and updated code has appropriate documentation
-- [ ] New and update code has new and/or updated testing
+- [ ] New and updated code has new and/or updated testing
 - [ ] PR is linked to appropriate project
 - [ ] CI is passing
 - [ ] Reviewers have been properly assigned
