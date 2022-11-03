@@ -18,8 +18,7 @@ please provide a tl;dr and link the issue.
 ## Checklist
 
 <!-- 
-Review and complete the checklist to ensure that the PR is complete before
-assigned to an approver.  
+Please complete the checklist to ensure that the PR is ready to be reviewed.
 
 IMPORTANT:
 PRs should be left in Draft until the below checklist is completed.
