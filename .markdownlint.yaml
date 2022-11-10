@@ -2,3 +2,4 @@
 "MD013": false # Disable rule for line length
 "MD033": false # Disable rule banning inline HTML
 "MD001": false # Disable rule requiring heading levels should only increment by one level at a time
+"MD041": false # Disable rule requiring the first line in a file should be a top-level heading
