@@ -1,5 +1,3 @@
-# PULL REQUEST
-
 <!--
 Please read and fill out this form before submitting your PR.
 
