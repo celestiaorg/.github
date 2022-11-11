@@ -1,0 +1,100 @@
+# This workflow combines and handful of useful housekeeping workflows. Each
+# individual step can be enabled by using the corresponding `run-XXX` input
+# boolean. Actions are disabled by default so they are opt-in.
+#
+# NOTE: This workflow requires the `secrets.GITHUB_TOKEN`. Be sure to pass it in
+# with the `secrets: inherit` keyword.
+#
+# labels
+# The labels action automates adding labels to issues
+#
+# projects
+# The projects action automates adding issues or PR to projects
+#
+# auto-request-review
+# The auto-request-review action is a helper that is a cross between the
+# ownership functionality of the CODEOWNERS and the Github team auto
+# assignments.
+name: Housekeeping
+
+on:
+  workflow_call:
+    inputs:
+      run-labels:
+        required: false
+        type: boolean
+        description: "Indicate if you would like to run the labels action"
+        default: false
+      labels-to-add:
+        required: false
+        type: string
+        description: "Comma separated list of labels to add"
+        default: ""
+      ignore-if-labeled:
+        required: false
+        type: boolean
+        description: "Indicate if the action should ignore already labelled items"
+        default: false
+      run-projects:
+        required: false
+        type: boolean
+        description: "Indicate if you would like to run the projects action"
+        default: false
+      project-url:
+        required: false
+        type: string
+        description: "URL to the project"
+        default: ""
+      project-labels:
+        required: false
+        type: string
+        description: "labels to filter on for adding to project"
+        default: ""
+      project-labels-operator:
+        required: false
+        type: string
+        description: "label operator (AND or NOT) for filtering labels for adding to project"
+        default: ""
+      run-auto-request-review:
+        required: false
+        type: boolean
+        description: "Indicate if you would like to run the auto request review action"
+        default: false
+
+jobs:
+  # See https://github.com/marketplace/actions/simple-issue-labeler for more
+  # information on how to use this action
+  labels:
+    if: ${{ inputs.run-labels }}
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: andymckay/labeler@master
+        with:
+          add-labels: ${{ inputs.labels-to-add }}
+          ignore-if-labeled: ${{ inputs.ignore-if-labeled }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+  # See https://github.com/marketplace/actions/add-to-github-projects for more
+  # information on how to use this action
+  projects:
+    if: ${{ inputs.run-projects }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/add-to-project@v0.3.0
+        with:
+          project-url: ${{ inputs.project-url }}
+          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
+          labeled: ${{ inputs.project-labels }}
+          label-operator: ${{ inputs.project-labels-operator }}
+
+  # See https://github.com/marketplace/actions/auto-request-review for more
+  # information on how to use this action
+  auto-request-review:
+    if: ${{ inputs.run-auto-request-review }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: necojackarc/auto-request-review@v0.8.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}

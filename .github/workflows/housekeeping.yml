@@ -1,0 +1,36 @@
+name: Housekeeping
+
+on:
+  # triage new issues
+  issues:
+    types: [opened]
+  pull_request:
+
+jobs:
+  # calls housekeeping for issues
+  housekeeping1:
+    if: ${{ github.event_name == 'issues' }}
+    uses: ./.github/workflows/reusable_housekeeping.yml
+    secrets: inherit
+    with:
+      # Labels
+      run-labels: true
+      labels-to-add: "needs: triage"
+      ignore-if-labeled: true
+      # Projects
+      run-projects: true
+      project-url: "https://github.com/users/MSevey/projects/1"
+
+  # calls housekeeping for PRs
+  housekeeping2:
+    if: ${{ github.event_name == 'pull_request' }}
+    uses: ./.github/workflows/reusable_housekeeping.yml
+    secrets: inherit
+    with:
+      # Projects
+      run-projects: true
+      project-url: "https://github.com/users/MSevey/projects/1"
+      project-labels: "project"
+      # Reviewers
+      run-auto-request-review: true
+      # reviewer-config-file: "./github/reviewers.yml"
