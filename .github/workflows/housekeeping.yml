@@ -3,11 +3,8 @@ name: Housekeeping
 on:
   # triage new issues
   issues:
-    types: [opened]
+    types: [opened, edited]
   pull_request:
-
-env:
-  PROJECT_URL: "https://github.com/orgs/celestiaorg/projects/10"
 
 jobs:
   # calls housekeeping for issues
@@ -30,6 +27,25 @@ jobs:
       # run-projects: true
       # project-url: ${{ env.PROJECT_URL }}
 
+  # This illustrates how to only trigger on issues with `EPIC` in the title and
+  # then add the corresponding EPIC issue to multiple projects
+  epic_issues:
+    name: Manage epic_issues
+    if: contains(github.event.issue.title, 'EPIC')
+    strategy:
+      matrix:
+        project_url:
+          - "https://github.com/orgs/celestiaorg/projects/25"
+          - "https://github.com/orgs/celestiaorg/projects/23"
+    uses: ./.github/workflows/reusable_housekeeping.yml
+    secrets: inherit
+    permissions:
+      issues: write
+    with:
+      # Projects
+      run-projects: true
+      project-url: ${{ matrix.project_url }}
+
   # calls housekeeping for PRs
   # In this example, we are adding PRs with the `project` label to the defined
   # project board. Additionally we are using the custom PR assignment rules
@@ -46,7 +62,7 @@ jobs:
     with:
       # Projects
       run-projects: true
-      project-url: ${{ env.PROJECT_URL }}
+      project-url: "https://github.com/orgs/celestiaorg/projects/10"
       project-labels: "project"
       # Reviewers
       run-auto-request-review: true
