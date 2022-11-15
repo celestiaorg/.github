@@ -8,10 +8,13 @@ on:
 
 jobs:
   # calls housekeeping for issues
-  housekeeping1:
+  issues:
+    name: Issue Management
     if: ${{ github.event_name == 'issues' }}
     uses: ./.github/workflows/reusable_housekeeping.yml
     secrets: inherit
+    permissions:
+      issues: write
     with:
       # Labels
       run-labels: true
@@ -22,10 +25,15 @@ jobs:
       project-url: "https://github.com/users/MSevey/projects/1"
 
   # calls housekeeping for PRs
-  housekeeping2:
+  pull_request:
+    name: PR Management
     if: ${{ github.event_name == 'pull_request' }}
     uses: ./.github/workflows/reusable_housekeeping.yml
     secrets: inherit
+    permissions:
+      # write access for issues is needed because the called workflow requires
+      # write access to issues
+      issues: write
     with:
       # Projects
       run-projects: true

@@ -85,6 +85,8 @@ jobs:
       - uses: actions/add-to-project@v0.3.0
         with:
           project-url: ${{ inputs.project-url }}
+          # There is a celestiaorg level ADD_TO_PROJECT_PAT secret that belongs
+          # to MSevey who should have sufficient access for all public repos
           github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
           labeled: ${{ inputs.project-labels }}
           label-operator: ${{ inputs.project-labels-operator }}
