@@ -2,7 +2,8 @@
 reviewers:
   # The default reviewers
   defaults:
-    - team:engineering # This is the Github Team
+    # Example of Github Team. Github team must have write access to repo
+    # - team:engineering # This is the Github Team
     - MSevey
 
 files:
