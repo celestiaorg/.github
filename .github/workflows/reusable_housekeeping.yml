@@ -101,4 +101,7 @@ jobs:
     steps:
       - uses: necojackarc/auto-request-review@v0.8.0
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # There is a celestiaorg level PAT_FOR_AUTO_REQUEST_REVIEW secret that
+          # belongs to MSevey who should have sufficient access for all public
+          # repos
+          token: ${{ secrets.PAT_FOR_AUTO_REQUEST_REVIEW }}
