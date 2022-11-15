@@ -6,8 +6,14 @@ on:
     types: [opened]
   pull_request:
 
+env:
+  PROJECT_URL: "https://github.com/orgs/celestiaorg/projects/10"
+
 jobs:
   # calls housekeeping for issues
+  # In this example, we are adding `needs: triage` label to all newly created
+  # and unlabeled issues. Additionally, the section that is commented out would
+  # be adding all issues to the defined project
   issues:
     name: Issue Management
     if: ${{ github.event_name == 'issues' }}
@@ -21,10 +27,13 @@ jobs:
       labels-to-add: "needs: triage"
       ignore-if-labeled: true
       # Projects
-      run-projects: true
-      project-url: "https://github.com/users/MSevey/projects/1"
+      # run-projects: true
+      # project-url: ${{ env.PROJECT_URL }}
 
   # calls housekeeping for PRs
+  # In this example, we are adding PRs with the `project` label to the defined
+  # project board. Additionally we are using the custom PR assignment rules
+  # defined in `.github/auto_request_review.yml`.
   pull_request:
     name: PR Management
     if: ${{ github.event_name == 'pull_request' }}
@@ -37,8 +46,7 @@ jobs:
     with:
       # Projects
       run-projects: true
-      project-url: "https://github.com/users/MSevey/projects/1"
+      project-url: ${{ env.PROJECT_URL }}
       project-labels: "project"
       # Reviewers
       run-auto-request-review: true
-      # reviewer-config-file: "./github/reviewers.yml"
