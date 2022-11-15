@@ -96,6 +96,8 @@ jobs:
   auto-request-review:
     if: ${{ inputs.run-auto-request-review }}
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - uses: necojackarc/auto-request-review@v0.8.0
         with:

@@ -16,8 +16,12 @@ jobs:
     if: ${{ github.event_name == 'issues' }}
     uses: ./.github/workflows/reusable_housekeeping.yml
     secrets: inherit
+    # write access for issues and pull requests is needed because the called
+    # workflow requires write access to issues and pull requests and the
+    # permissions must match
     permissions:
       issues: write
+      pull-requests: write
     with:
       # Labels
       run-labels: true
@@ -41,6 +45,7 @@ jobs:
     secrets: inherit
     permissions:
       issues: write
+      pull-requests: write
     with:
       # Projects
       run-projects: true
@@ -56,9 +61,8 @@ jobs:
     uses: ./.github/workflows/reusable_housekeeping.yml
     secrets: inherit
     permissions:
-      # write access for issues is needed because the called workflow requires
-      # write access to issues
       issues: write
+      pull-requests: write
     with:
       # Projects
       run-projects: true
