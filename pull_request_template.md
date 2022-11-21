@@ -8,7 +8,7 @@ first PR.
 ## Overview
 
 <!-- 
-Please provide an explanation of the PR, including the apprioprate context,
+Please provide an explanation of the PR, including the appropriate context,
 background, goal, and rationale. If there is an issue with this information,
 please provide a tl;dr and link the issue. 
 -->
