@@ -27,3 +27,4 @@ runs:
     - uses: gaurav-nelson/github-action-markdown-link-check@1.0.14
       with:
         folder-path: ${{ inputs.folder_path }}
+        retryOn429: true
