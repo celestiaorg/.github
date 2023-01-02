@@ -1,0 +1,72 @@
+name: Housekeeping
+
+on:
+  # triage new issues
+  issues:
+    types: [opened, edited]
+  pull_request:
+
+jobs:
+  # calls housekeeping for issues
+  # In this example, we are adding `needs: triage` label to all newly created
+  # and unlabeled issues. Additionally, the section that is commented out would
+  # be adding all issues to the defined project
+  issues:
+    name: Issue Management
+    if: ${{ github.event_name == 'issues' }}
+    uses: ./.github/workflows/reusable_housekeeping.yml
+    secrets: inherit
+    # write access for issues and pull requests is needed because the called
+    # workflow requires write access to issues and pull requests and the
+    # permissions must match
+    permissions:
+      issues: write
+      pull-requests: write
+    with:
+      # Labels
+      run-labels: true
+      labels-to-add: "needs: triage"
+      ignore-if-labeled: true
+      # Projects
+      # run-projects: true
+      # project-url: ${{ env.PROJECT_URL }}
+
+  # This illustrates how to only trigger on issues with `EPIC` in the title and
+  # then add the corresponding EPIC issue to multiple projects
+  epic_issues:
+    name: Manage epic_issues
+    if: contains(github.event.issue.title, 'EPIC')
+    strategy:
+      matrix:
+        project_url:
+          - "https://github.com/orgs/celestiaorg/projects/25"
+          - "https://github.com/orgs/celestiaorg/projects/23"
+    uses: ./.github/workflows/reusable_housekeeping.yml
+    secrets: inherit
+    permissions:
+      issues: write
+      pull-requests: write
+    with:
+      # Projects
+      run-projects: true
+      project-url: ${{ matrix.project_url }}
+
+  # calls housekeeping for PRs
+  # In this example, we are adding PRs with the `project` label to the defined
+  # project board. Additionally we are using the custom PR assignment rules
+  # defined in `.github/auto_request_review.yml`.
+  pull_request:
+    name: PR Management
+    if: ${{ github.event_name == 'pull_request' }}
+    uses: ./.github/workflows/reusable_housekeeping.yml
+    secrets: inherit
+    permissions:
+      issues: write
+      pull-requests: write
+    with:
+      # Projects
+      run-projects: true
+      project-url: "https://github.com/orgs/celestiaorg/projects/10"
+      project-labels: "project"
+      # Reviewers
+      run-auto-request-review: true
