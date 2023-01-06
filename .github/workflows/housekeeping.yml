@@ -4,7 +4,7 @@ on:
   # triage new issues
   issues:
     types: [opened, edited]
-  pull_request:
+  pull_request_target:
 
 jobs:
   # calls housekeeping for issues
