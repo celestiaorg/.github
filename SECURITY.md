@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-We recommend to only use the most recent minor release.
+Unless otherwise specified, we recommend to only use the most recent minor version release.
 
 ## Reporting a Vulnerability
 
