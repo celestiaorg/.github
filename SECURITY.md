@@ -16,11 +16,11 @@ If a repository doesn't have the proper security reporting set up, please email 
 
 Please first submit the vulnerability you discovered using the instructions in
 Reporting a Vulnerability. Once you have done so, you may share the details with
-third parties after either of the following, whichever is sooner: 
+third parties after either of the following, whichever is sooner:
+
 - the vulnerability has been fixed and the Celestia program owner has provided
 permission for you to disclose it; or
-- you do not receive any response for 120 days after you submit the vulnerability 
-
+- you do not receive any response for 120 days after you submit the vulnerability
 
 ### Scope
 
@@ -35,7 +35,8 @@ vulnerability and the researchers after a fix has been widely deployed.
 
 ### Official Communication Channel
 
-The default communication channel for security related discussions is the `security@celestia.org` email. For security fixes and announcements, the communication channels listed on the [Celestia homepage](https://celestia.org) will be used.
+All security updates will be communicated via the security advisories in the
+corresponding code repository that.
 
 ### Comments on this Policy
 
