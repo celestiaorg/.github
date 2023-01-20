@@ -20,7 +20,7 @@ third parties after either of the following, whichever is sooner:
 
 - the vulnerability has been fixed and the Celestia program owner has provided
 permission for you to disclose it; or
-- you do not receive any response for 120 days after you submit the vulnerability
+- 120 days after you submit the vulnerability
 
 ### Scope
 
