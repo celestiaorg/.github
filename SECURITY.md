@@ -85,8 +85,8 @@ Concept; and cease testing and submit a report immediately if you encounter any
 user data during testing, such as Personally Identifiable Information (PII),
 Personal Healthcare Information (PHI), credit card data, or proprietary
 information;
-- You should only interact with test accounts you own or with explicit
-permission from the account holder; and
+- Only interact with test accounts you own or with explicit permission from the
+account holder; and
 - Do not engage in extortion.
 
 ### Safe Harbor
