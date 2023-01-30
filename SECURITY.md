@@ -22,7 +22,7 @@ Please first submit the vulnerability you discovered using the instructions in
 you may share the details with third parties after either of the following,
 whichever is sooner:
 
-- the vulnerability has been fixed and the Celestia program owner has provided
+- the vulnerability has been fixed and the security program owner has provided
 permission for you to disclose it; or
 - 120 days after you submit the vulnerability
 
