@@ -99,7 +99,7 @@ jobs:
     permissions:
       pull-requests: write
     steps:
-      - uses: necojackarc/auto-request-review@v0.8.0
+      - uses: necojackarc/auto-request-review@v0.10.0
         with:
           # There is a celestiaorg level PAT_FOR_AUTO_REQUEST_REVIEW secret that
           # belongs to MSevey who should have sufficient access for all public
