@@ -1,0 +1,100 @@
+name: Docker Build & Publish
+
+on:
+  workflow_call:
+    inputs:
+      dockerfile:
+        required: false
+        type: string
+        description: "Path to Dockerfile"
+        default: "Dockerfile"
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  MAINTAINER: CelestiaOrg
+  DESCRIPTION: CelestiaOrg repository ${{ github.repository }}
+
+jobs:
+  docker-security:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Checkout
+        uses: "actions/checkout@v3"
+      - name: Build and Push
+        uses: docker/build-push-action@v3
+        with:
+          push: false
+          platforms: linux/amd64
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          file: ${{ inputs.dockerfile }}
+      - name: Run Trivy vulnerability scanner
+        # source: https://github.com/aquasecurity/trivy-action
+        # https://github.com/marketplace/actions/aqua-security-trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest'
+          format: 'table'
+          #exit-code: '1' # uncomment to stop the CI if the scanner fails
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+  docker-build:
+    runs-on: "ubuntu-latest"
+    # wait until the security scanner will be done
+    needs: docker-security
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout
+        uses: "actions/checkout@v3"
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Add SHORT_SHA to ENV
+        run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
+      - name: Extract Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # yamllint disable
+          labels: |
+            maintainer=${{ env.MAINTAINER }}
+            commitUrl=https://github.com/${{ github.repository }}/commit/${{ github.sha }}
+            dockerPull=docker pull ${{ env.REGISTRY }}/${{ github.repository }}:${{ env.SHORT_SHA }}
+            org.opencontainers.image.description=${{ env.DESCRIPTION }}
+          tags: |
+            # output minimal (short sha)
+            type=raw,value={{sha}}
+            # output 0.2.1
+            type=semver,pattern={{version}}
+            # pull request event
+            type=ref,enable=true,prefix=pr-,suffix=,event=pr
+          # yamllint enable
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build Docker Image
+        uses: docker/build-push-action@v3
+        with:
+          platforms: linux/amd64
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: ${{ inputs.dockerfile }}
+      - name: Push Docker Image
+        uses: docker/build-push-action@v3
+        if: |
+          github.ref == 'refs/heads/main' ||
+          startsWith(github.ref, 'refs/tags/v')
+        with:
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: ${{ inputs.dockerfile }}
