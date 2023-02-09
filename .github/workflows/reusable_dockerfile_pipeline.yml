@@ -12,8 +12,8 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  MAINTAINER: CelestiaOrg
-  DESCRIPTION: CelestiaOrg repository ${{ github.repository }}
+  MAINTAINER: ${{ github.repository_owner }}
+  DESCRIPTION: "${{ github.repository_owner }} repository ${{ github.repository }}"
 
 jobs:
   docker-security:
@@ -80,7 +80,7 @@ jobs:
           tags: |
             # output minimal (short sha)
             type=raw,value={{sha}}
-            # output 0.2.1
+            # output v0.2.1
             type=semver,pattern=v{{version}}
             # pull request event
             type=ref,enable=true,prefix=pr-,suffix=,event=pr
@@ -102,4 +102,4 @@ jobs:
           # yamllint enable
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          file: Dockerfile
+          file: ${{ inputs.dockerfile }}
