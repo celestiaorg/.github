@@ -23,7 +23,7 @@ jobs:
         uses: "actions/checkout@v3"
 
       - name: Build and Push
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           push: false
           platforms: linux/amd64
@@ -92,7 +92,7 @@ jobs:
       # We always build the image but we only push if we are on the `main`
       # branch or a versioned `v*` branch
       - name: Build and PushDocker Image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           platforms: linux/amd64,linux/arm64
           # yamllint disable
