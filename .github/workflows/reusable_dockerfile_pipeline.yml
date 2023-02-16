@@ -33,8 +33,8 @@ jobs:
         with:
           push: false
           platforms: linux/amd64
-          # we're building the container before the scan, use the local tag for
-          # refer to it later
+          # we're building the container before the scan, use the short sha tag
+          # for refer to it later
           tags: ${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }}
 
       - name: Run Trivy vulnerability scanner
