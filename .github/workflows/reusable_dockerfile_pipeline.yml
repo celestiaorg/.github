@@ -11,7 +11,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
   MAINTAINER: ${{ github.repository_owner }}
   DESCRIPTION: "${{ github.repository_owner }} repository ${{ github.repository }}"
 
@@ -22,6 +21,13 @@ jobs:
       - name: Checkout
         uses: "actions/checkout@v3"
 
+      - name: Add vars to ENV
+        run: |
+          echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
+          # yamllint disable
+          echo "IMAGE_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          # yamllint enable
+
       - name: Build and Push
         uses: docker/build-push-action@v4
         with:
@@ -29,7 +35,7 @@ jobs:
           platforms: linux/amd64
           # we're building the container before the scan, use the local tag for
           # refer to it later
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:local
+          tags: ${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }}
 
       - name: Run Trivy vulnerability scanner
         # source: https://github.com/aquasecurity/trivy-action
@@ -37,7 +43,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           # here we use the local tag that we've built before
-          image-ref: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:local'
+          image-ref: '${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }}'
           format: 'table'
           #exit-code: '1' # uncomment to stop the CI if the scanner fails
           ignore-unfixed: true
@@ -63,8 +69,12 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Add SHORT_SHA to ENV
-        run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
+      - name: Add vars to ENV
+        run: |
+          echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
+          # yamllint disable
+          echo "IMAGE_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          # yamllint enable
 
       - name: Extract Docker Metadata
         id: meta
@@ -76,7 +86,7 @@ jobs:
             maintainer=${{ env.MAINTAINER }}
             commitUrl=https://github.com/${{ github.repository }}/commit/${{ github.sha }}
             dockerPull=docker pull ${{ env.REGISTRY }}/${{ github.repository }}:${{ env.SHORT_SHA }}
-            org.opencontainers.image.description=${{ env.DESCRIPTION }}
+            org.opencontainers.image.description=${{ env.DESCRIPTION }}
           tags: |
             # output minimal (short sha)
             type=raw,value={{sha}}
@@ -102,4 +112,4 @@ jobs:
           # yamllint enable
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          file: ${{ inputs.dockerfile }}
+          file: ${{ inputs.dockerfile }}
