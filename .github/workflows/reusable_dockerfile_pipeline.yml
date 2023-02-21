@@ -36,6 +36,7 @@ jobs:
           # we're building the container before the scan, use the short sha tag
           # for referring to it later
           tags: ${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }}
+          file: ${{ inputs.dockerfile }}
 
       - name: Run Trivy vulnerability scanner
         # source: https://github.com/aquasecurity/trivy-action
