@@ -40,6 +40,14 @@ jobs:
           # here we validate if we have specified a different package name in
           # the inputs, if so, we change the package to it.
           if [[ ${{ inputs.packageName }} != ${{ github.repository}} ]];then
+            # validate the input package name characters
+            if [[ ! "${{ inputs.packageName }}" =~ ^[A-Za-z0-9\-]+$ ]]; then
+              echo "------------------------------------------------------------"
+              echo "ERROR: Package name not valid! => [ ${{ inputs.packageName }} ]"
+              echo "ONLY can use: A-Za-z0-9\-"
+              echo "------------------------------------------------------------"
+              exit 1
+            fi
             echo "IMAGE_NAME=$(echo ${{ github.repository_owner }}/${{ inputs.packageName }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
             echo "image_name=$(echo ${{ github.repository_owner }}/${{ inputs.packageName }} | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
           fi
