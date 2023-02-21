@@ -8,6 +8,11 @@ on:
         type: string
         description: "Path to Dockerfile"
         default: "Dockerfile"
+      packageName:
+        required: false
+        type: string
+        description: "If you want to specify the Docker Image Name"
+        default: "${{ github.repository }}"
 
 env:
   REGISTRY: ghcr.io
@@ -26,6 +31,11 @@ jobs:
           echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
           # yamllint disable
           echo "IMAGE_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          # here we validate if we have specified a different package name in
+          # the inputs, if so, we change the package to it.
+          if [[ ${{ inputs.packageName }} != ${{ github.repository}} ]];then
+            echo "IMAGE_NAME=$(echo ${{ github.repository_owner }}/${{ inputs.packageName }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          fi
           # yamllint enable
 
       - name: Build and Push
@@ -75,6 +85,11 @@ jobs:
           echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
           # yamllint disable
           echo "IMAGE_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          # here we validate if we have specified a different package name in
+          # the inputs, if so, we change the package to it.
+          if [[ ${{ inputs.packageName }} != ${{ github.repository}} ]];then
+            echo "IMAGE_NAME=$(echo ${{ github.repository_owner }}/${{ inputs.packageName }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          fi
           # yamllint enable
 
       - name: Extract Docker Metadata
