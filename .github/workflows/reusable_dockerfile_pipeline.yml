@@ -11,7 +11,7 @@ on:
       packageName:
         required: false
         type: string
-        description: "If you want to specify the Docker Image Name"
+        description: "You can specify a different package name."
         default: "${{ github.repository }}"
 
 env:
