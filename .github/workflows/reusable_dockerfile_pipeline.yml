@@ -99,16 +99,16 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      # We always build the image but we only push if we are on the `main`
-      # branch or a versioned `v*` branch
+      # We always build the image but we only push if we are on the `main`,
+      # `master` branch or a versioned `v*` branch
       - name: Build and PushDocker Image
         uses: docker/build-push-action@v4
         with:
           platforms: linux/amd64,linux/arm64
           # yamllint disable
           # The following line, is execute as an if statement, only push when
-          # the branch is main or starts with v*
-          push: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
+          # the branch is main, master or starts with v*
+          push: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') }}
           # yamllint enable
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
