@@ -8,6 +8,11 @@ on:
         type: string
         description: "Path to Dockerfile"
         default: "Dockerfile"
+      packageName:
+        required: false
+        type: string
+        description: "You can specify a different package name."
+        default: "${{ github.repository }}"
 
 env:
   REGISTRY: ghcr.io
@@ -15,36 +20,69 @@ env:
   DESCRIPTION: "${{ github.repository_owner }} repository ${{ github.repository }}"
 
 jobs:
-  docker-security:
+  prepare-env:
     runs-on: "ubuntu-latest"
+    outputs:
+      output_short_sha: ${{ steps.setting_env.outputs.short_sha }}
+      output_image_name: ${{ steps.setting_env.outputs.image_name }}
     steps:
       - name: Checkout
         uses: "actions/checkout@v3"
 
       - name: Add vars to ENV
+        id: setting_env
         run: |
           echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
+          echo "short_sha=`echo ${GITHUB_SHA} | cut -c1-8`" >> "$GITHUB_OUTPUT"
           # yamllint disable
           echo "IMAGE_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          echo "image_name=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+          # here we validate if we have specified a different package name in
+          # the inputs, if so, we change the package to it.
+          if [[ ${{ inputs.packageName }} != ${{ github.repository}} ]];then
+            # validate the input package name characters
+            if [[ ! "${{ inputs.packageName }}" =~ ^[A-Za-z0-9\-]+$ ]]; then
+              echo "------------------------------------------------------------"
+              echo "ERROR: Package name not valid! => [ ${{ inputs.packageName }} ]"
+              echo "ONLY can use: A-Za-z0-9\-"
+              echo "------------------------------------------------------------"
+              exit 1
+            fi
+            echo "IMAGE_NAME=$(echo ${{ github.repository_owner }}/${{ inputs.packageName }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+            echo "image_name=$(echo ${{ github.repository_owner }}/${{ inputs.packageName }} | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+          fi
           # yamllint enable
+
+  docker-security:
+    needs: prepare-env
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Checkout
+        uses: "actions/checkout@v3"
 
       - name: Build and Push
         uses: docker/build-push-action@v4
+        env:
+          OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
+          OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
           push: false
           platforms: linux/amd64
           # we're building the container before the scan, use the short sha tag
           # for referring to it later
-          tags: ${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }}
+          tags: ${{ env.OUTPUT_IMAGE_NAME }}:${{ env.OUTPUT_SHORT_SHA }}
           file: ${{ inputs.dockerfile }}
 
       - name: Run Trivy vulnerability scanner
         # source: https://github.com/aquasecurity/trivy-action
         # https://github.com/marketplace/actions/aqua-security-trivy
         uses: aquasecurity/trivy-action@master
+        env:
+          OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
+          OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
           # here we use the local tag that we've built before
-          image-ref: '${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }}'
+          image-ref: '${{ env.OUTPUT_IMAGE_NAME }}:${{ env.OUTPUT_SHORT_SHA }}'
           format: 'table'
           #exit-code: '1' # uncomment to stop the CI if the scanner fails
           ignore-unfixed: true
@@ -53,8 +91,8 @@ jobs:
 
   docker-build:
     runs-on: "ubuntu-latest"
-    # wait until the security scanner will be done
-    needs: docker-security
+    # wait until the jobs are finished.
+    needs: ["prepare-env", "docker-security"]
     permissions:
       contents: write
       packages: write
@@ -70,23 +108,19 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Add vars to ENV
-        run: |
-          echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
-          # yamllint disable
-          echo "IMAGE_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-          # yamllint enable
-
       - name: Extract Docker Metadata
         id: meta
         uses: docker/metadata-action@v4
+        env:
+          OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
+          OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.OUTPUT_IMAGE_NAME }}
           # yamllint disable
           labels: |
             maintainer=${{ env.MAINTAINER }}
             commitUrl=https://github.com/${{ github.repository }}/commit/${{ github.sha }}
-            dockerPull=docker pull ${{ env.REGISTRY }}/${{ github.repository }}:${{ env.SHORT_SHA }}
+            dockerPull=docker pull ${{ env.REGISTRY }}/${{ github.repository }}:${{ env.OUTPUT_SHORT_SHA }}
             org.opencontainers.image.description=${{ env.DESCRIPTION }}
           tags: |
             # output minimal (short sha)
@@ -104,6 +138,9 @@ jobs:
       # `master` branch or a versioned `v*` branch
       - name: Build and PushDocker Image
         uses: docker/build-push-action@v4
+        env:
+          OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
+          OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
           platforms: linux/amd64,linux/arm64
           # yamllint disable
