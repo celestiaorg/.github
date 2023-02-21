@@ -92,7 +92,7 @@ jobs:
   docker-build:
     runs-on: "ubuntu-latest"
     # wait until the jobs are finished.
-    needs: ["prepare-env","docker-security"]
+    needs: ["prepare-env", "docker-security"]
     permissions:
       contents: write
       packages: write
