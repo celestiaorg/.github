@@ -8,6 +8,13 @@
 # global owners are only requested if there isn't a more specific
 # codeowner specified below. For this reason, the global codeowners
 # are often repeated in package-level definitions.
-* @liamsi @MSevey
-/.github/ @celestiaorg/devops
 
+# Global Owner(s)
+* @MSevey
+
+# .github directory owners
+/.github/ @MSevey @celestiaorg/devops
+
+# Specific file owners
+CONTRIBUTING.md @liamsi @MSevey
+SECURITY.md @liamsi @MSevey
