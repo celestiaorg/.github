@@ -4,13 +4,18 @@
 
 - {date}: {changelog}
 
+## Status
+
+> A decision may be "proposed" if it hasn't been agreed upon yet, or "accepted"
+once it is agreed upon. Once the ADR has been implemented mark the ADR as
+"implemented". If a later ADR changes or reverses a decision, it may be marked
+as "deprecated" or "superseded" with a reference to its replacement.
+
+{Proposed|Accepted|Implemented|Deprecated|Superseded}
+
 ## Context
 
 > This section contains all the context one needs to understand the current state, and why there is a problem. It should be as succinct as possible and introduce the high-level idea behind the solution.
-
-## Alternative Approaches
-
-> This section contains information about alternative options that are considered before making a decision. It should contain an explanation of why the alternative approach(es) were not chosen.
 
 ## Decision
 
@@ -49,11 +54,10 @@
 >
 > - Does this change require coordination with the SDK or others?
 
-## Status
+## Alternative Approaches
 
-> A decision may be "proposed" if it hasn't been agreed upon yet, or "accepted" once it is agreed upon. Once the ADR has been implemented mark the ADR as "implemented". If a later ADR changes or reverses a decision, it may be marked as "deprecated" or "superseded" with a reference to its replacement.
+> This section contains information about alternative options that are considered before making a decision. It should contain an explanation of why the alternative approach(es) were not chosen.
 
-{Deprecated|Proposed|Accepted|Declined}
 
 ## Consequences
 
