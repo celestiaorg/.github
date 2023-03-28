@@ -92,7 +92,7 @@ jobs:
   docker-build:
     strategy:
       matrix:
-        platforms: ["linux/amd64","linux/arm64"]
+        platforms: ["linux/amd64", "linux/arm64"]
     runs-on: "ubuntu-latest"
     # wait until the jobs are finished.
     needs: ["prepare-env", "docker-security"]
