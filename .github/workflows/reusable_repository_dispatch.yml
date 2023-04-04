@@ -1,0 +1,116 @@
+name: Repository Dispatch
+
+# This workflow is used to call workflows in external repositories and bring the
+# result back into the calling repository.
+#
+# This is ideal for E2E testing when a repository can trigger a dependent
+# repository's integration tests in order to check for breaking changes.
+#
+# The called repository should have a workflow that triggers on `workflow_dispatch`
+#
+# Example:
+#
+# name: Repository Dispatch
+# on:
+#   workflow_dispatch:
+#     inputs:
+#       distinct_id:
+#       key:
+#
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: echo distinct ID ${{ github.event.inputs.distinct_id }}
+#         run: |
+#           echo ${{ github.event.inputs.distinct_id }}
+#           echo 'my input key ${{ inputs.key }}'
+#
+#
+# At a minimum a `distinct_id` input is required in the called workflow so that
+# this workflow can find the workflow run in the API since the `distinct_id` is
+# then printed in the run name. This also identifies one key limitation of this
+# workflow, which is the run step is what is tracked, not the full workflow.
+#
+# This example also shows how you can access addition inputs via the
+# `workflow_inputs` variable. These `workflow_inputs` should correspond with
+# `workflow_dispatch` inputs. In this example, the `workflow_inputs` would have
+# been '{"key": "my_value"}'
+#
+# TODO:
+#  - [ ] Investigate using the run_id to find the full workflow result in the
+#  API so that we can evaluate on the full workflow response and not have a work
+#  around for reacting just to an individual step.
+
+on:
+  workflow_call:
+    inputs:
+      owner:
+        description: "Repository owner for the target repository"
+        type: string
+        required: true
+      repo:
+        description: "Repository being targeted"
+        type: string
+        required: true
+      ref:
+        description: "The branch of the target repository that should be targeted, i.e. main or refs/heads/main"
+        type: string
+        required: false
+        default: main
+      workflow:
+        description: "The workflow in the target repository that should be triggered"
+        type: string
+        required: true
+      workflow_inputs:
+        description: "A key value map of custom inputs, i.e. `{'my_key':'my_value'}`"
+        type: string
+        required: false
+        default: ""
+      workflow_timeout_seconds:
+        description: "Timeout for called workflow"
+        type: number
+        required: false
+        default: 300
+
+jobs:
+  triggerMyEvent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch an action and get the run ID
+        uses: codex-/return-dispatch@v1
+        id: return_dispatch
+        with:
+          token: ${{ secrets.PAT_REPO_DISPATCH }} # this is an org level secret
+          ref: ${{inputs.repo}}
+          repo: ${{inputs.repo}}
+          owner: ${{inputs.owner}}
+          workflow: ${{inputs.workflow}}
+          workflow_inputs: ${{ inputs.workflow_inputs }} # Optional
+          workflow_timeout_seconds: ${{inputs.workflow_timeout_seconds}} # Default: 300
+
+      - name: Get Conclusion
+        uses: octokit/request-action@v2.x
+        id: get_run_conclusion
+        with:
+          route: GET /repos/{owner}/{repo}/actions/runs/{run_id}
+          owner: ${{inputs.owner}}
+          repo: ${{inputs.repo}}
+          run_id: ${{steps.return_dispatch.outputs.run_id}}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delay for api to update
+        run: sleep 2
+
+      - name: Check conclusion
+        run: "echo latest tag: '${{ fromJSON(steps.get_run_conclusion.outputs.data).conclusion }}'"
+
+      - name: Fail if not successful
+        if: ${{ fromJSON(steps.get_run_conclusion.outputs.data).conclusion != 'success' }}
+        run: exit 1
+        # Alternative if descriptive exit code is helpful
+        # uses: actions/github-script@v3
+        # with:
+        #   script: |
+        #       core.setFailed('Coverage test below tolerance')
