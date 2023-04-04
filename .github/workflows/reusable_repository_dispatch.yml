@@ -29,8 +29,8 @@ name: Repository Dispatch
 #
 # At a minimum a `distinct_id` input is required in the called workflow so that
 # this workflow can find the workflow run in the API since the `distinct_id` is
-# then printed in the run name. This also identifies one key limitation of this
-# workflow, which is the run step is what is tracked, not the full workflow.
+# then printed in the run name. This is just needed in one step, so as a
+# template, the echo statement can be used for debugging purposes.
 #
 # This example also shows how you can access addition inputs via the
 # `workflow_inputs` variable. These `workflow_inputs` should correspond with
