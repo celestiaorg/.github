@@ -36,11 +36,6 @@ name: Repository Dispatch
 # `workflow_inputs` variable. These `workflow_inputs` should correspond with
 # `workflow_dispatch` inputs. In this example, the `workflow_inputs` would have
 # been '{"key": "my_value"}'
-#
-# TODO:
-#  - [ ] Investigate using the run_id to find the full workflow result in the
-#  API so that we can evaluate on the full workflow response and not have a work
-#  around for reacting just to an individual step.
 
 on:
   workflow_call:
