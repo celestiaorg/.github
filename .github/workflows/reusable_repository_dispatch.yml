@@ -89,6 +89,12 @@ jobs:
           workflow_inputs: ${{ inputs.workflow_inputs }} # Optional
           workflow_timeout_seconds: ${{inputs.workflow_timeout_seconds}} # Default: 300
 
+      # I added this as I observed the API response sometimes being empty as the
+      # API route used to get the conclusion is different than the API route
+      # used in the previous action
+      - name: Delay for api to update
+        run: sleep 2
+
       - name: Get Conclusion
         uses: octokit/request-action@v2.x
         id: get_run_conclusion
@@ -100,12 +106,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Delay for api to update
-        run: sleep 2
-
-      - name: Check conclusion
-        run: "echo latest tag: '${{ fromJSON(steps.get_run_conclusion.outputs.data).conclusion }}'"
-
       - name: Fail if not successful
         if: ${{ fromJSON(steps.get_run_conclusion.outputs.data).conclusion != 'success' }}
         run: exit 1
@@ -113,4 +113,4 @@ jobs:
         # uses: actions/github-script@v3
         # with:
         #   script: |
-        #       core.setFailed('Coverage test below tolerance')
+        #       core.setFailed('My detailed error response')
