@@ -58,7 +58,6 @@ as "deprecated" or "superseded" with a reference to its replacement.
 
 > This section contains information about alternative options that are considered before making a decision. It should contain an explanation of why the alternative approach(es) were not chosen.
 
-
 ## Consequences
 
 > This section describes the consequences, after applying the decision. All consequences should be summarized here, not just the "positive" ones.
