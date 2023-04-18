@@ -66,11 +66,11 @@ jobs:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
-          push: false
+          push: true
           platforms: linux/amd64
           # we're building the container before the scan, use the short sha tag
           # for referring to it later
-          tags: ${{ env.OUTPUT_IMAGE_NAME }}:${{ env.OUTPUT_SHORT_SHA }}
+          tags: ${{ env.REGISTRY }}/${{ env.OUTPUT_IMAGE_NAME }}:${{ env.OUTPUT_SHORT_SHA }}
           file: ${{ inputs.dockerfile }}
 
       - name: Run Trivy vulnerability scanner
@@ -82,7 +82,7 @@ jobs:
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
           # here we use the local tag that we've built before
-          image-ref: '${{ env.OUTPUT_IMAGE_NAME }}:${{ env.OUTPUT_SHORT_SHA }}'
+          image-ref: '${{ env.REGISTRY }}/${{ env.OUTPUT_IMAGE_NAME }}:${{ env.OUTPUT_SHORT_SHA }}'
           format: 'table'
           #exit-code: '1' # uncomment to stop the CI if the scanner fails
           ignore-unfixed: true
