@@ -17,6 +17,10 @@ on:
         type: string
         description: "TestGround Cluster Region"
         default: "eu-west-1"
+      celestia_node_commit_sha:
+        required: false
+        type: string
+        description: "You can specify any commit that you want to use in the celestia-node repository"
 
 env:
   REPO_TG: https://github.com/testground/testground.git
@@ -52,21 +56,29 @@ jobs:
           mkdir -p ~/.config/testground/
           cat <<EOF > ~/.config/testground/.env.toml
           [aws]
-          region="${{ env.TESTGROUND_REGION }}"
+          region="${{ env.TESTGROUND_REGION }}"
           [client]
-          endpoint = "${{ env.TESTGROUND_URL }}"
-          user="${{ env.TG_USER }}"
+          endpoint = "${{ env.TESTGROUND_URL }}"
+          user="${{ env.TG_USER }}"
           EOF
           cat ~/.config/testground/.env.toml
 
+      # In the next step, we can verify if we need to use an specific commit 
+      # or we can use the one in the file.
       - name: Update go.mod with the latest Celestia Node commit
         run: |
-          cd test-infra
-          # Get the latest commit SHA in the celestia-node repo
-          CELESTIA_NODE=$(curl -Ls https://api.github.com/repos/${ORG}/${CELESTIA_NODE_REPO}/commits/${BRANCH} | jq -c '.sha'| tr -d '"'| cut -c1-7)
-          echo $CELESTIA_NODE
-          # Replace the value in the go.mod file
-          sed -i "s|github.com/${ORG}/${CELESTIA_NODE_REPO}.*|github.com/${ORG}${CELESTIA_NODE_REPO} ${CELESTIA_NODE}|g" go.mod
+          COMMIT_SHA=$(echo '${{ inputs.celestia_node_commit_sha }}'| tr -d '"')
+          if [[ -z "$COMMIT_SHA" ]];then
+            echo "[INFO] There's no commit secified, so use the current version"
+          else
+            echo "[INFO] Let's use an specific commit SHA"
+            cd test-infra
+            # Get the latest commit SHA in the celestia-node repo
+            CELESTIA_NODE=$(curl -Ls https://api.github.com/repos/${ORG}/${CELESTIA_NODE_REPO}/commits/${BRANCH} | jq -c '.sha'| tr -d '"'| cut -c1-7)
+            echo $CELESTIA_NODE
+            # Replace the value in the go.mod file
+            sed -i "s|github.com/${ORG}/${CELESTIA_NODE_REPO}.*|github.com/${ORG}${CELESTIA_NODE_REPO} ${CELESTIA_NODE}|g" go.mod
+          fi
 
       - name: Plan the execution
         run: |
