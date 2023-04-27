@@ -21,12 +21,17 @@ on:
         required: false
         type: string
         description: "You can specify any commit that you want to use in the celestia-node repository"
+      celestia_app_commit_sha:
+        required: false
+        type: string
+        description: "You can specify any commit that you want to use in the celestia-app repository"
 
 env:
   REPO_TG: https://github.com/testground/testground.git
   REPO_TEST_TG: https://github.com/celestiaorg/test-infra.git
   ORG: celestiaorg
   CELESTIA_NODE_REPO: celestia-node
+  CELESTIA_APP_REPO: celestia-app
   BRANCH: main
   TG_USER: ga-bot
   TESTGROUND_URL: ${{ inputs.testground_url }}
@@ -65,19 +70,33 @@ jobs:
 
       # In the next step, we can verify if we need to use an specific commit 
       # or we can use the one in the file.
-      - name: Update go.mod with the latest Celestia Node commit
+      - name: Update go.mod with the given inputs
         run: |
-          COMMIT_SHA=$(echo '${{ inputs.celestia_node_commit_sha }}'| tr -d '"')
-          if [[ -z "$COMMIT_SHA" ]];then
+          NODE_COMMIT_SHA=$(echo '${{ inputs.celestia_node_commit_sha }}'| tr -d '"')
+          if [[ -z "$NODE_COMMIT_SHA" ]];then
             echo "[INFO] There's no commit secified, so use the current version"
           else
-            echo "[INFO] Let's use an specific commit SHA"
+            echo "[INFO] Let's use an specific commit SHA for celestia-node"
             cd test-infra
             # Get the latest commit SHA in the celestia-node repo
             CELESTIA_NODE=$(curl -Ls https://api.github.com/repos/${ORG}/${CELESTIA_NODE_REPO}/commits/${BRANCH} | jq -c '.sha'| tr -d '"'| cut -c1-7)
             echo $CELESTIA_NODE
             # Replace the value in the go.mod file
             sed -i "s|github.com/${ORG}/${CELESTIA_NODE_REPO}.*|github.com/${ORG}${CELESTIA_NODE_REPO} ${CELESTIA_NODE}|g" go.mod
+            cd ..
+          fi
+          APP_COMMIT_SHA=$(echo '${{ inputs.celestia_app_commit_sha }}'| tr -d '"')
+          if [[ -z "$APP_COMMIT_SHA" ]];then
+            echo "[INFO] There's no commit secified, so use the current version"
+          else
+            echo "[INFO] Let's use an specific commit SHA for celestia-app"
+            cd test-infra
+            # Get the latest commit SHA in the celestia-node repo
+            CELESTIA_APP=$(curl -Ls https://api.github.com/repos/${ORG}/${CELESTIA_APP_REPO}/commits/${BRANCH} | jq -c '.sha'| tr -d '"'| cut -c1-7)
+            echo $CELESTIA_APP
+            # Replace the value in the go.mod file
+            sed -i "s|github.com/${ORG}/${CELESTIA_APP_REPO}.*|github.com/${ORG}${CELESTIA_APP_REPO} ${CELESTIA_APP}|g" go.mod
+            cd ..
           fi
 
       - name: Plan the execution
@@ -92,15 +111,19 @@ jobs:
           cd test-infra
           $GOBIN/testground plan import --from . --name celestia
           $GOBIN/testground daemon &
-          # Let's give some seconds to the daemon service to start
-          sleep 3
+          # Check if TestGround Daemon is listening...
+          until nc -z 127.0.0.1 8042;do
+            sleep 1
+            echo "[INFO] Waiting for the TestGround Daemon to be up & running..."
+          done
+          echo "[INFO] TestGround Daemon is ready to start receiving requests!"
 
       - name: Execute the test
         run: |
           export GOBIN=$(go env GOPATH)/bin
           cd test-infra
           echo "-----------------------------------------"
-          $GOBIN/testground run composition -f ${{ env.TEST_FILES_PATH }} | tee tg_run.log
+          $GOBIN/testground run composition -f ${{ env.TEST_FILES_PATH }} | tee tg_run.log
           echo "-----------------------------------------"
           cat tg_run.log
           echo "-----------------------------------------"
