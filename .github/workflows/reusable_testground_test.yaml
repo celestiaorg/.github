@@ -37,7 +37,7 @@ env:
   TESTGROUND_URL: ${{ inputs.testground_url }}
   TESTGROUND_REGION: ${{ inputs.testground_region }}
   TEST_FILES_PATH: ${{ inputs.tests_files_path }}
- 
+
 jobs:
   testground:
     runs-on: ubuntu-latest
