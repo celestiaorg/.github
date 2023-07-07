@@ -82,14 +82,17 @@ jobs:
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
           # here we use the local tag that we've built before
-          image-ref: '${{ env.OUTPUT_IMAGE_NAME }}:${{ env.OUTPUT_SHORT_SHA }}'
-          format: 'table'
+          image-ref: "${{ env.OUTPUT_IMAGE_NAME }}:${{ env.OUTPUT_SHORT_SHA }}"
+          format: "table"
           #exit-code: '1' # uncomment to stop the CI if the scanner fails
           ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+          vuln-type: "os,library"
+          severity: "CRITICAL,HIGH"
 
   docker-build:
+    strategy:
+      matrix:
+        platform: [linux/amd64, linux/arm64]
     runs-on: "ubuntu-latest"
     # wait until the jobs are finished.
     needs: ["prepare-env", "docker-security"]
@@ -136,18 +139,18 @@ jobs:
 
       # We always build the image but we only push if we are on the `main`,
       # `master` branch or a versioned `v*` branch
-      - name: Build and Push Docker Image (amd64 and arm64)
+      - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
-        # yamllint disable
-        # only run when the branch is main, master or starts with v*
-        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') }}
         # yamllint enable
         env:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
-          platforms: linux/amd64,linux/arm64
-          push: true
+          platforms: ${{ matrix.platform }}
+          # only run when the branch is main, master or starts with v*
+          # yamllint disable
+          push: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') }}
+          # yamllint enable
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           file: ${{ inputs.dockerfile }}
