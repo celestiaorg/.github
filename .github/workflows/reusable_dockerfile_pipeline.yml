@@ -26,21 +26,6 @@ jobs:
       output_short_sha: ${{ steps.setting_env.outputs.short_sha }}
       output_image_name: ${{ steps.setting_env.outputs.image_name }}
     steps:
-      - run: |
-          echo github.event.pull_request.head.repo.full_name
-          echo ${{github.event.pull_request.head.repo.full_name}}
-      - run: |
-          echo github.event.pull_request.base.repo.full_name
-          echo ${{github.event.pull_request.base.repo.full_name}}
-      - run: |
-          echo github.repository
-          echo ${{ github.repository	}}
-      - run: |
-          echo github.repository_owner
-          echo ${{ github.repository_owner	}}
-      - run: |
-          echo github.event_name
-          echo ${{ github.event_name	}}
       - name: Checkout
         uses: "actions/checkout@v3"
 
@@ -154,20 +139,24 @@ jobs:
       # to the registry so we can only push if the PR is not generated from a
       # fork. Even though forks can't push, we still want to try and build the
       # image to catch bugs. For testing purposes we only need an amd64 image.
-      # - name: Build and Push Docker Image amd64 for Pull Requests
-      #   uses: docker/build-push-action@v4
-      #   env:
-      #     OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
-      #     OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
-      #   with:
-      #     platforms: linux/amd64
-      #     push: if not fork
-      #     tags: ${{ steps.meta.outputs.tags }}
-      #     labels: ${{ steps.meta.outputs.labels }}
-      #     file: ${{ inputs.dockerfile }}
+      - name: Build and Push Docker Image amd64 for Pull Requests
+        uses: docker/build-push-action@v4
+        if: ${{ github.event_name == pull_request }}
+        env:
+          OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
+          OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
+        with:
+          platforms: linux/amd64
+          # Only push if the head and base repos match, meaning it is not a fork
+          # yamllint disable
+          push: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}
+          # yamllint enable
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: ${{ inputs.dockerfile }}
 
-      # We always build the image but we only push if we are on the `main`,
-      # `master` branch or a versioned `v*` branch
+      # On main, master, and versioned branches, we want to build and push the
+      # images.
       - name: Build and Push Docker Images (amd64 and arm64)
         uses: docker/build-push-action@v4
         # yamllint disable
