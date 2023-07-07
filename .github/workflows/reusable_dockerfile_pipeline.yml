@@ -26,6 +26,8 @@ jobs:
       output_short_sha: ${{ steps.setting_env.outputs.short_sha }}
       output_image_name: ${{ steps.setting_env.outputs.image_name }}
     steps:
+      - name: debug
+        run: echo ${{ github.repository_owner	}}
       - name: Checkout
         uses: "actions/checkout@v3"
 
@@ -82,12 +84,12 @@ jobs:
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
           # here we use the local tag that we've built before
-          image-ref: '${{ env.OUTPUT_IMAGE_NAME }}:${{ env.OUTPUT_SHORT_SHA }}'
-          format: 'table'
+          image-ref: "${{ env.OUTPUT_IMAGE_NAME }}:${{ env.OUTPUT_SHORT_SHA }}"
+          format: "table"
           #exit-code: '1' # uncomment to stop the CI if the scanner fails
           ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+          vuln-type: "os,library"
+          severity: "CRITICAL,HIGH"
 
   docker-build:
     runs-on: "ubuntu-latest"
@@ -134,21 +136,26 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Build and Push Docker Image (amd64)
-        uses: docker/build-push-action@v4
-        env:
-          OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
-          OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
-        with:
-          platforms: linux/amd64
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          file: ${{ inputs.dockerfile }}
+      # On Pull Requests we want the ability to build and push images for
+      # testing purposes. The Github security model prevents forks from pushing
+      # to the registry so we can only push if the PR is not generated from a
+      # fork. Even though forks can't push, we still want to try and build the
+      # image to catch bugs. For testing purposes we only need an amd64 image.
+      # - name: Build and Push Docker Image amd64 for Pull Requests
+      #   uses: docker/build-push-action@v4
+      #   env:
+      #     OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
+      #     OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
+      #   with:
+      #     platforms: linux/amd64
+      #     push: if not fork
+      #     tags: ${{ steps.meta.outputs.tags }}
+      #     labels: ${{ steps.meta.outputs.labels }}
+      #     file: ${{ inputs.dockerfile }}
 
       # We always build the image but we only push if we are on the `main`,
       # `master` branch or a versioned `v*` branch
-      - name: Build and Push Docker Image (amd64 and arm64)
+      - name: Build and Push Docker Images (amd64 and arm64)
         uses: docker/build-push-action@v4
         # yamllint disable
         # only run when the branch is main, master or starts with v*
