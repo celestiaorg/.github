@@ -134,14 +134,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      # On Pull Requests we want the ability to build and push images for
-      # testing purposes. The Github security model prevents forks from pushing
-      # to the registry so we can only push if the PR is not generated from a
-      # fork. Even though forks can't push, we still want to try and build the
-      # image to catch bugs. For testing purposes we only need an amd64 image.
-      - name: Build and Push Docker Image amd64 for Pull Requests
+      # Build amd64 images always, and publish when it is not a fork. The Github
+      # security model prevents forks from pushing to the registry so we can
+      # only push if the branch/PR is not generated from a fork. Even though
+      # forks can't push, we still want to try and build the image to catch
+      # bugs. For testing purposes we only need an amd64 image.
+      - name: Build and Push Docker Image amd64
         uses: docker/build-push-action@v4
-        if: ${{ github.event_name == pull_request }}
         env:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
@@ -155,9 +154,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           file: ${{ inputs.dockerfile }}
 
-      # On main, master, and versioned branches, we want to build and push the
-      # images.
-      - name: Build and Push Docker Images (amd64 and arm64)
+      # Build and Publish arm64 images on main, master, and versioned branches.
+      - name: Build and Push Docker Images arm64
         uses: docker/build-push-action@v4
         # yamllint disable
         # only run when the branch is main, master or starts with v*
@@ -167,7 +165,7 @@ jobs:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
