@@ -146,6 +146,7 @@ jobs:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
+          context: .
           platforms: linux/amd64
           # Only push if the head and base repos match, meaning it is not a fork
           # yamllint disable
@@ -155,8 +156,17 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           file: ${{ inputs.dockerfile }}
 
-      # Build and Publish arm64 images on main, master, and versioned branches.
-      - name: Build and Push Docker Images arm64
+      # Build and Publish images on main, master, and versioned branches.
+      #
+      # NOTES:
+      # This step overrides the tag from the previous step. It will re-use
+      # the cached image that was built and only build the remaining images.
+      #
+      # The reason we split out these steps into 2 is for better handling of
+      # forks when building amd64 images and to enable faster availability of
+      # the amd64 image since building the arm64 image takes significantly
+      # longer.
+      - name: Build and Push Docker Images
         uses: docker/build-push-action@v4
         # yamllint disable
         # only run when the branch is main, master or starts with v*
@@ -166,8 +176,8 @@ jobs:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
-          platforms: linux/arm64
           context: .
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
