@@ -85,10 +85,8 @@ jobs:
     needs: [yamllint, markdown-lint]
     if: always()
     # if: always() && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/notify-slack
+    secrets: inherit
+    uses: ./.github/workflows/reusable_notify_slack.yml
 
   # Option for directly calling the workflow
   # notify-slack-on-failure:
