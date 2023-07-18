@@ -80,7 +80,7 @@ jobs:
   #         semver_version: ${{ needs.release.outputs.new_version }}
 
   notify-slack-on-failure:
-    needs: [yamllint, markdown-lint, test-failure]
+    needs: [yamllint, markdown-lint]
     runs-on: ubuntu-latest
     steps:
       - name: Notify Slack On Failure
