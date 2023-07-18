@@ -81,12 +81,12 @@ jobs:
 
   notify-slack-on-failure:
     needs: [yamllint, markdown-lint]
+    if: always()
+    # if: always() && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     steps:
       - name: Notify Slack On Failure
         uses: ravsamhq/notify-slack-action@v2
-        if: always()
-        # if: always() && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
         with:
           status: ${{ job.status }}
           token: ${{ secrets.GITHUB_TOKEN }}
