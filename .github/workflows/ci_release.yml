@@ -80,11 +80,11 @@ jobs:
   #         semver_version: ${{ needs.release.outputs.new_version }}
 
   # notify-slack-on-failure will send a message to slack if the workflow fails.
-  # This shows how to use the reusable action. Below is how to call it directly.
+  # This shows how to use the reusable workflow. Below is how to call it directly.
   notify-slack-on-failure:
     needs: [yamllint, markdown-lint]
-    if: always()
-    # if: always() && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+    # Always run, regardless of job failures, only run on main/master branches.
+    if: always() && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
     secrets: inherit
     uses: ./.github/workflows/reusable_notify_slack.yml
 
