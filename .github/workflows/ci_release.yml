@@ -85,6 +85,8 @@ jobs:
     # if: always() && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     steps:
+      - run: echo "${{ toJson(github) }}"
+      - run: echo "${{ toJson(job) }}"
       - name: Notify Slack On Failure
         uses: ravsamhq/notify-slack-action@v2
         with:
