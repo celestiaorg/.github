@@ -95,4 +95,5 @@ jobs:
           footer: ""
           # notify_when: "failure"
         env:
+          # testing
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_RELEASE_CHANNEL }}
