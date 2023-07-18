@@ -1,0 +1,23 @@
+# Define action name, description, and inputs
+name: "Notify Slack"
+description: "Notify Slack on Workflow Failures"
+
+# Define action steps
+runs:
+  using: "composite"
+  steps:
+    # run this action to get the workflow conclusion
+    # You can get the conclusion via env (env.WORKFLOW_CONCLUSION)
+    - uses: technote-space/workflow-conclusion-action@v3
+
+    - name: Notify Slack On Failure
+      uses: ravsamhq/notify-slack-action@v2
+      with:
+        status: ${{ env.WORKFLOW_CONCLUSION }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+        notification_title: "{workflow} has {status_message}"
+        message_format: "{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}> : <{run_url}|View Run Results>"
+        footer: ""
+        notify_when: "failure"
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_RELEASE_CHANNEL }}
