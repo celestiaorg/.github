@@ -87,6 +87,7 @@ jobs:
     # if: always() && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - uses: ./.github/actions/notify-slack
 
   # Option for directly calling the workflow
