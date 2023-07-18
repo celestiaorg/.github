@@ -87,7 +87,7 @@ jobs:
     steps:
       # - run: echo "${{ toJson(github) }}"
       - run: echo "${{ toJson(job) }}"
-      - run: echo "${{ toJson(workflow) }}"
+      # - run: echo "${{ toJson(workflow) }}"
       - name: Notify Slack On Failure
         uses: ravsamhq/notify-slack-action@v2
         with:
