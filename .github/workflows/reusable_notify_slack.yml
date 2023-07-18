@@ -2,6 +2,9 @@ name: "Notify Slack"
 on:
   workflow_call:
 
+# This is a reuable workflow instead of a composite action so that we can
+# inherit secrets and reduce the inputs to zero.
+
 jobs:
   stale:
     runs-on: ubuntu-latest
