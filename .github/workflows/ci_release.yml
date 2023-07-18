@@ -41,17 +41,17 @@ jobs:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/yamllint
 
-  # markdown-lint:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - uses: ./.github/actions/markdown-lint
+  markdown-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/markdown-lint
 
   # Make a release if
   # - there were changes and this is a scheduled job
   # - This is a manually trigger job, i.e. workflow_dispatch
   release:
-    # needs: [yamllint, markdown-lint]
+    needs: [yamllint, markdown-lint]
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'workflow_dispatch' }}
     permissions: "write-all"
@@ -80,18 +80,19 @@ jobs:
   #         semver_version: ${{ needs.release.outputs.new_version }}
 
   notify-slack-on-failure:
-    needs: yamllint
+    needs: [yamllint, markdown-lint]
     if: always()
     # if: always() && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     steps:
-      # - run: echo "${{ toJson(github) }}"
-      - run: echo "${{ toJson(job) }}"
-      # - run: echo "${{ toJson(workflow) }}"
+      # run this action to get the workflow conclusion
+      # You can get the conclusion via env (env.WORKFLOW_CONCLUSION)
+      - uses: technote-space/workflow-conclusion-action@v3
+
       - name: Notify Slack On Failure
         uses: ravsamhq/notify-slack-action@v2
         with:
-          status: ${{ job.status }}
+          status: ${{ env.WORKFLOW_CONCLUSION }}
           token: ${{ secrets.GITHUB_TOKEN }}
           notification_title: "{workflow} has {status_message}"
           message_format: "{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}> : <{run_url}|View Run Results>"
