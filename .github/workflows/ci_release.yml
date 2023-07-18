@@ -79,8 +79,14 @@ jobs:
   #         docker_repository: <update>
   #         semver_version: ${{ needs.release.outputs.new_version }}
 
+  test-failure:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "this is a super long line that aims to fail the yamllint so cause a failure there to check that this work when there is a failure"
+      - run: exit 1
+
   notify-slack-on-failure:
-    needs: [yamllint, markdown-lint]
+    needs: [yamllint, markdown-lint, test-failure]
     runs-on: ubuntu-latest
     steps:
       - name: Notify Slack On Failure
