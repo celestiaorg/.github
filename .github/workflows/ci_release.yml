@@ -78,3 +78,35 @@ jobs:
   #         docker_password: ${{ secrets.DOCKER_PASSWORD}}
   #         docker_repository: <update>
   #         semver_version: ${{ needs.release.outputs.new_version }}
+
+  # notify-slack-on-failure will send a message to slack if the workflow fails.
+  # This shows how to use the reusable workflow. Below is how to call it directly.
+  notify-slack-on-failure:
+    needs: [yamllint, markdown-lint]
+    # Always run, regardless of job failures, only run on main/master branches.
+    if: always() && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+    secrets: inherit
+    uses: ./.github/workflows/reusable_notify_slack.yml
+
+  # Option for directly calling the workflow
+  # notify-slack-on-failure:
+  #   needs: [yamllint, markdown-lint]
+  #   if: always()
+  #   # if: always() && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     # run this action to get the workflow conclusion
+  #     # You can get the conclusion via env (env.WORKFLOW_CONCLUSION)
+  #     - uses: technote-space/workflow-conclusion-action@v3
+
+  #     - name: Notify Slack On Failure
+  #       uses: ravsamhq/notify-slack-action@v2
+  #       with:
+  #         status: ${{ env.WORKFLOW_CONCLUSION }}
+  #         token: ${{ secrets.GITHUB_TOKEN }}
+  #         notification_title: "{workflow} has {status_message}"
+  #         message_format: "{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}> : <{run_url}|View Run Results>"
+  #         footer: ""
+  #         notify_when: "failure"
+  #       env:
+  #         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_RELEASE_CHANNEL }}

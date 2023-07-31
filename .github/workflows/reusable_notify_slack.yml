@@ -1,0 +1,36 @@
+name: "Notify Slack"
+on:
+  workflow_call:
+
+# This is a reuable workflow instead of a composite action so that we can
+# inherit secrets and reduce the inputs to zero.
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      # run this action to get the workflow conclusion
+      # You can get the conclusion via env (env.WORKFLOW_CONCLUSION)
+      #
+      # NOTE: it is important that we use the workflow conclusion, otherwise the
+      # job status will always be successful since it is just the job of notifying
+      # slack.
+      - uses: technote-space/workflow-conclusion-action@v3
+
+      - name: Notify Slack On Failure
+        uses: ravsamhq/notify-slack-action@v2
+        with:
+          status: ${{ env.WORKFLOW_CONCLUSION }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # These fields could be updated to be inputs, but that might make the
+          # reuseable action less useful since it there wouldn't be much
+          # refactored.
+          notification_title: "{workflow} has {status_message}"
+          message_format: "{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}> : <{run_url}|View Run Results>"
+          footer: ""
+          notify_when: "failure"
+        env:
+          # This could be updated to a more generic name that repos could set as a
+          # way to customize which channel they are reporting to. Currently this
+          # is an org level secret.
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_RELEASE_CHANNEL }}
