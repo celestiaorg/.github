@@ -147,6 +147,7 @@ jobs:
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
           context: .
+          provenance: false
           platforms: linux/amd64
           # Only push if the head and base repos match, meaning it is not a fork
           # yamllint disable
@@ -178,6 +179,7 @@ jobs:
         with:
           context: .
           platforms: linux/amd64,linux/arm64
+          provenance: false
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
