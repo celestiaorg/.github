@@ -133,7 +133,7 @@ jobs:
           # yamllint enable
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       # Build amd64 images always, and publish when it is not a fork. The Github
       # security model prevents forks from pushing to the registry so we can
