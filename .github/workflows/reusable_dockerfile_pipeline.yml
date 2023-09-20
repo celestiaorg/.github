@@ -61,7 +61,7 @@ jobs:
         uses: "actions/checkout@v4"
 
       - name: Build and Push
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         env:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
@@ -141,7 +141,7 @@ jobs:
       # forks can't push, we still want to try and build the image to catch
       # bugs. For testing purposes we only need an amd64 image.
       - name: Build and Push Docker Image amd64
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         env:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
@@ -168,7 +168,7 @@ jobs:
       # the amd64 image since building the arm64 image takes significantly
       # longer.
       - name: Build and Push Docker Images
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         # yamllint disable
         # only run when the branch is main, master or starts with v*
         if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') }}
