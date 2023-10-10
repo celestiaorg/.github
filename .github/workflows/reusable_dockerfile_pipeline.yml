@@ -192,6 +192,9 @@ jobs:
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
           context: .
+          # We don't use the cache to reduce complexity. We've seen issues of
+          # the same commit from a PR and on main causing incorrect images being
+          # built.
           no-cache: true
           provenance: false
           platforms: linux/amd64
@@ -215,6 +218,9 @@ jobs:
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
           context: .
+          # We don't use the cache to reduce complexity. We've seen issues of
+          # the same commit from a PR and on main causing incorrect images being
+          # built.
           no-cache: true
           platforms: linux/amd64,linux/arm64
           provenance: false
