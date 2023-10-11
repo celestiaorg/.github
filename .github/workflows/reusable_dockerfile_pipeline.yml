@@ -70,9 +70,9 @@ jobs:
         id: setting_logic
         run: |
           # yamllint disable
-          echo "build_for_pr=$(echo ${{ github.event == 'pull_request' }}" >> "$GITHUB_OUTPUT"
-          echo "build_for_merge=$(echo ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') }}" >> "$GITHUB_OUTPUT"
-          echo "not_a_fork=$(echo ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}" >> "$GITHUB_OUTPUT"
+          echo "build_for_pr=${{ github.event == 'pull_request' }}" >> "$GITHUB_OUTPUT"
+          echo "build_for_merge=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') }}" >> "$GITHUB_OUTPUT"
+          echo "not_a_fork=${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}" >> "$GITHUB_OUTPUT"
           # yamllint enable
 
   # Log the key inputs to the logic as well a the outputs. We check that
