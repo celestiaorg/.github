@@ -25,6 +25,9 @@ jobs:
     outputs:
       output_short_sha: ${{ steps.setting_env.outputs.short_sha }}
       output_image_name: ${{ steps.setting_env.outputs.image_name }}
+      build_for_pr: ${{ steps.setting_logic.outputs.build_for_pr }}
+      build_for_merge: ${{ steps.setting_logic.outputs.build_for_merge }}
+      not_a_fork: ${{ steps.setting_logic.outputs.not_a_fork }}
     steps:
       - name: Checkout
         uses: "actions/checkout@v4"
@@ -53,8 +56,49 @@ jobs:
           fi
           # yamllint enable
 
-  docker-security:
+      # The key logic that we want to determine is whether or not we are working
+      # on a fork and if this is a pull request or merge to main.
+      #
+      # We care about forks because of github's security policies that prevent
+      # forks from pushing images. So we only want to build images on forks
+      #
+      # The distinction between pull requests and merges to main is that on pull
+      # requests we want a single image available quickly for testing. On merges
+      # to main we want all the images built and are ok waiting longer to ensure
+      # there are not bugs.
+      - name: Add logic to ENV
+        id: setting_logic
+        run: |
+          # yamllint disable
+          echo "build_for_pr=$(echo ${{ github.event == 'pull_request' }}" >> "$GITHUB_OUTPUT"
+          echo "build_for_merge=$(echo ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') }}" >> "$GITHUB_OUTPUT"
+          echo "not_a_fork=$(echo ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}" >> "$GITHUB_OUTPUT"
+          # yamllint enable
+
+  # Log the key inputs to the logic as well a the outputs. We check that
+  # build_for_pr and build_for_merge are never equal as that would indicate a
+  # bug.
+  logic-check:
     needs: prepare-env
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Log logic
+        run: |
+          echo "github.event: ${{ github.event }}"
+          echo "github.ref: ${{ github.ref }}"
+          echo "head repo: ${{ github.event.pull_request.head.repo.full_name }}"
+          echo "base repo: ${{ github.event.pull_request.base.repo.full_name }}"
+          echo "build_for_pr: ${{ needs.prepare-env.outputs.build_for_pr }}"
+          echo "build_for_merge: ${{ needs.prepare-env.outputs.build_for_merge }}"
+          echo "not_a_fork: ${{ needs.prepare-env.outputs.not_a_fork }}"
+      - name: Check logic
+        if: ${{ needs.prepare-env.outputs.build_for_pr == needs.prepare-env.outputs.build_for_merge }}
+        run: |
+          echo "Failing step due to build_for_pr == build_for_merge"
+          exit 1
+
+  docker-security:
+    needs: ["prepare-env", "logic-check"]
     runs-on: "ubuntu-latest"
     steps:
       - name: Checkout
@@ -93,7 +137,7 @@ jobs:
   docker-build:
     runs-on: "ubuntu-latest"
     # wait until the jobs are finished.
-    needs: ["prepare-env", "docker-security"]
+    needs: ["prepare-env", "logic-check", "docker-security"]
     permissions:
       contents: write
       packages: write
@@ -140,44 +184,44 @@ jobs:
       # only push if the branch/PR is not generated from a fork. Even though
       # forks can't push, we still want to try and build the image to catch
       # bugs. For testing purposes we only need an amd64 image.
-      - name: Build and Push Docker Image amd64
+      - name: "Pull Request Trigger: Build and Push amd64 Docker Image"
+        if: ${{ needs.prepare-env.outputs.build_for_pr }}
         uses: docker/build-push-action@v5
         env:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
           context: .
+          # We don't use the cache to reduce complexity. We've seen issues of
+          # the same commit from a PR and on main causing incorrect images being
+          # built.
+          no-cache: true
           provenance: false
           platforms: linux/amd64
           # Only push if the head and base repos match, meaning it is not a fork
-          # yamllint disable
-          push: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}
-          # yamllint enable
+          push: ${{ needs.prepare-env.outputs.not_a_fork }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           file: ${{ inputs.dockerfile }}
 
       # Build and Publish images on main, master, and versioned branches.
       #
-      # NOTES:
-      # This step overrides the tag from the previous step. It will re-use
-      # the cached image that was built and only build the remaining images.
-      #
       # The reason we split out these steps into 2 is for better handling of
       # forks when building amd64 images and to enable faster availability of
       # the amd64 image since building the arm64 image takes significantly
       # longer.
-      - name: Build and Push Docker Images
+      - name: "Merge on Main Trigger: Build and Push All Docker Images"
+        if: ${{ needs.prepare-env.outputs.build_for_merge }}
         uses: docker/build-push-action@v5
-        # yamllint disable
-        # only run when the branch is main, master or starts with v*
-        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') }}
-        # yamllint enable
         env:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
           context: .
+          # We don't use the cache to reduce complexity. We've seen issues of
+          # the same commit from a PR and on main causing incorrect images being
+          # built.
+          no-cache: true
           platforms: linux/amd64,linux/arm64
           provenance: false
           push: true
