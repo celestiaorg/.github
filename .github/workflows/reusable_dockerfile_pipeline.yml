@@ -70,7 +70,7 @@ jobs:
         id: setting_logic
         run: |
           # yamllint disable
-          echo "build_for_pr=${{ github.event == 'pull_request' }}" >> "$GITHUB_OUTPUT"
+          echo "build_for_pr=${{ github.event_name == 'pull_request' }}" >> "$GITHUB_OUTPUT"
           echo "build_for_merge=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') }}" >> "$GITHUB_OUTPUT"
           echo "not_a_fork=${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}" >> "$GITHUB_OUTPUT"
           # yamllint enable
@@ -84,8 +84,9 @@ jobs:
     steps:
       - name: Log logic
         run: |
-          echo "github.event: ${{ github.event }}"
+          echo "github.event_name: ${{ github.event_name }}"
           echo "github.ref: ${{ github.ref }}"
+          echo "github.event: ${{ toJSON(github.event) }}"
           echo "head repo: ${{ github.event.pull_request.head.repo.full_name }}"
           echo "base repo: ${{ github.event.pull_request.base.repo.full_name }}"
           echo "build_for_pr: ${{ needs.prepare-env.outputs.build_for_pr }}"
