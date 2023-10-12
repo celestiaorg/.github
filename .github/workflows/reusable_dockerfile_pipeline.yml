@@ -86,7 +86,6 @@ jobs:
         run: |
           echo "github.event_name: ${{ github.event_name }}"
           echo "github.ref: ${{ github.ref }}"
-          echo "github.event: ${{ toJSON(github.event) }}"
           echo "head repo: ${{ github.event.pull_request.head.repo.full_name }}"
           echo "base repo: ${{ github.event.pull_request.base.repo.full_name }}"
           echo "build_for_pr: ${{ needs.prepare-env.outputs.build_for_pr }}"
