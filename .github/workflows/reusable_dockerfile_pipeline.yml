@@ -185,7 +185,7 @@ jobs:
       # forks can't push, we still want to try and build the image to catch
       # bugs. For testing purposes we only need an amd64 image.
       - name: "Pull Request Trigger: Build and Push amd64 Docker Image"
-        if: ${{ needs.prepare-env.outputs.build_for_pr }}
+        if: ${{ needs.prepare-env.outputs.build_for_pr == 'true' }}
         uses: docker/build-push-action@v5
         env:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
@@ -199,7 +199,7 @@ jobs:
           provenance: false
           platforms: linux/amd64
           # Only push if the head and base repos match, meaning it is not a fork
-          push: ${{ needs.prepare-env.outputs.not_a_fork }}
+          push: ${{ needs.prepare-env.outputs.not_a_fork == 'true' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           file: ${{ inputs.dockerfile }}
@@ -211,7 +211,7 @@ jobs:
       # the amd64 image since building the arm64 image takes significantly
       # longer.
       - name: "Merge on Main Trigger: Build and Push All Docker Images"
-        if: ${{ needs.prepare-env.outputs.build_for_merge }}
+        if: ${{ needs.prepare-env.outputs.build_for_merge == 'true' }}
         uses: docker/build-push-action@v5
         env:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
