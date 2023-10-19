@@ -127,9 +127,6 @@ jobs:
         with:
           context: .
           push: false
-          no-cache: true
-          load: true
-          verbose: true
           platforms: linux/amd64
           # we're building the container before the scan, use the short sha tag
           # for referring to it later
