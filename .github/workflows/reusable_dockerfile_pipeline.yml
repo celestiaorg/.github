@@ -37,6 +37,8 @@ jobs:
         id: setting_env
         run: |
           # Extract both the repository owner and repository name
+          # According to docs, github.repository is in the format of owner/repo, not just repo
+          # https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
             REPO_OWNER=$(echo "${{ github.repository }}" | awk -F'/' '{print $1}' | tr '[:upper:]' '[:lower:]')
             REPO_NAME=$(echo "${{ github.repository }}" | awk -F'/' '{print $2}' | tr '[:upper:]' '[:lower:]')
 
@@ -64,10 +66,26 @@ jobs:
                 echo "------------------------------------------------------------"
                 exit 1
               fi
-              PACKAGE_NAME=$(echo "${{ inputs.packageName }}" | tr '[:upper:]' '[:lower:]')
+
+              # Set the default package name to the repository name
+              PACKAGE_NAME=$REPO_NAME
+
+              # If there is a user submitted package name, use it
+              if [[ ! "${{ inputs.packageName }}" != "" ]]; then
+                PACKAGE_NAME=$(echo "${{ inputs.packageName }}" | tr '[:upper:]' '[:lower:]')
+              fi
+
+              # validate the package name characters
+              if [[ ! $PACKAGE_NAME =~ ^[A-Za-z0-9\-]+$ ]]; then
+                echo "------------------------------------------------------------"
+                echo "ERROR: Package name not valid! => [ $PACKAGE_NAME} ]"
+                echo "ONLY can use: A-Za-z0-9\-"
+                echo "------------------------------------------------------------"
+                exit 1
+              fi
+
               echo "IMAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
               echo "image_name=$PACKAGE_NAME" >> "$GITHUB_OUTPUT"
-
             fi
           # yamllint enable
 
@@ -230,9 +248,6 @@ jobs:
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
           context: .
-          # We don't use the cache to reduce complexity. We've seen issues of
-          # the same commit from a PR and on main causing incorrect images being
-          # built.
           platforms: linux/arm64,linux/amd64
           provenance: false
           push: true
@@ -253,10 +268,6 @@ jobs:
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
           context: .
-          # We don't use the cache to reduce complexity. We've seen issues of
-          # the same commit from a PR and on main causing incorrect images being
-          # built.
-          no-cache: true
           platforms: linux/amd64
           provenance: false
           # Only push if the head and base repos match, meaning it is not a fork
