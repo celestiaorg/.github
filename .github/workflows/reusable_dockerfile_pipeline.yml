@@ -202,7 +202,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ matrix.registry.registry-url }}
-          username: ${{ matrix.registry.registry-url == 'ghcr.io' && matrix.registry.user-secret || secrets[matrix.registry.user-secret] }}
+          username: ${{ matrix.registry.registry-url == env.GITHUB_REG && matrix.registry.user-secret || secrets[matrix.registry.user-secret] }}
           password: ${{ secrets[matrix.registry.token-secret] }}
 
       - name: Extract Docker Metadata
