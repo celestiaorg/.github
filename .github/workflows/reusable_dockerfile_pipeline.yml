@@ -186,7 +186,7 @@ jobs:
           - name: GHCR
             user-secret: ${{ github.repository_owner }}
             token-secret: GITHUB_TOKEN
-            registry-url: ghcr.io
+            registry-url: ${{ env.GITHUB_REG }}
             registry-owner: ${{ needs.prepare-env.outputs.repo_owner }}
           - name: ScaleWay
             user-secret: SCALEWAY_USERNAME
