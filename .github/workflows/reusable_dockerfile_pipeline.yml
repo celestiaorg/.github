@@ -55,6 +55,17 @@ jobs:
               # Set the default package name to the repository name
               PACKAGE_NAME=$REPO_NAME
 
+              # If a user submitted package name that has the naming containing
+              # both the repository owner and repository name, we fail
+              # e.g: inputs.packageName = "celestiaorg/celestiaorg" is not allowed
+              if [[ ! "${{ inputs.packageName }}" == "${{ github.repository }}" ]]; then
+                echo "------------------------------------------------------------"
+                echo "ERROR: Package name not valid! => [ $PACKAGE_NAME} ]"
+                echo "Don't use the repository owner and repository name in the package name."
+                echo "------------------------------------------------------------"
+                exit 1
+              fi
+
               # If there is a user submitted package name, use it
               if [[ ! "${{ inputs.packageName }}" != "" ]]; then
                 PACKAGE_NAME=$(echo "${{ inputs.packageName }}" | tr '[:upper:]' '[:lower:]')
