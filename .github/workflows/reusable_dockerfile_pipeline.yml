@@ -54,10 +54,10 @@ jobs:
               echo "${{ inputs.packageName }}"
 
               # If there is a user submitted package name, use it
-              if [[ ! "${{ inputs.packageName }}" != "" ]]; then
+              if [[ -n "${{ inputs.packageName }}" ]]; then
                 PACKAGE_NAME=$(echo "${{ inputs.packageName }}" | tr '[:upper:]' '[:lower:]')
                 echo "INSIDOOOOOR: $PACKAGE_NAME"
-              elif [[ ! "${{ inputs.packageName }}" == "${{ github.repository }}" ]]; then
+              elif [[ "${{ inputs.packageName }}" == "${{ github.repository }}" ]]; then
                 # If a user submitted package name that has the naming containing
                 # both the repository owner and repository name, we fail
                 # e.g: inputs.packageName = "celestiaorg/celestiaorg" is not allowed
