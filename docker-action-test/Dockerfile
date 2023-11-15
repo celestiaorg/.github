@@ -6,7 +6,7 @@ ARG TARGETARCH
 ENV CGO_ENABLED=0
 ENV GO111MODULE=on
 
-ADD . /app
+ADD ./docker-action-test /app
 WORKDIR /app
 
 RUN uname -a &&\
