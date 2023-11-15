@@ -82,7 +82,7 @@ jobs:
 
               echo "IMAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
               echo "image_name=$PACKAGE_NAME" >> "$GITHUB_OUTPUT"
-            fi
+
           # yamllint enable
 
       # The key logic that we want to determine is whether or not we are working
