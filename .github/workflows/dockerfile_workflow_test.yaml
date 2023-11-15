@@ -2,6 +2,9 @@ name: Build Using Reusable Workflow
 on: [push, pull_request]
 jobs:
   reusable-build:
+    permissions:
+      contents: write
+      packages: write
     uses: celestiaorg/.github/.github/workflows/reusable_dockerfile_pipeline.yml@develop
     with:
       dockerfile: docker-action-test/Dockerfile
