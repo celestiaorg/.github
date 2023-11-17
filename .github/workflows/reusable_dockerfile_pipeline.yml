@@ -273,7 +273,7 @@ jobs:
           provenance: false
           # Only push if the head and base repos match, meaning it is not a fork
           push: ${{ needs.prepare-env.outputs.not_a_fork == 'true' }}
-          tags: ${{ matrix.registry.registry-url }}/${{ matrix.registry.registry-owner }}/${{ steps.meta.outputs.tags }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           file: ${{ inputs.dockerfile }}
       - name: Post Docker Build Log
