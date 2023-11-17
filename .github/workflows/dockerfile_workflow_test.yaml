@@ -9,3 +9,4 @@ jobs:
     with:
       dockerfile: docker-action-test/Dockerfile
       packageName: docker-test
+    secrets: inherit
