@@ -230,6 +230,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Log Docker Tags and Labels
+        run: |
+          echo "Tags: ${{ steps.meta.outputs.tags }}"
+          echo "Labels: ${{ steps.meta.outputs.labels }}"
+
       # Build and Publish images on main, master, and versioned branches.
       #
       # The reason we split out these steps into 2 is for better handling of
@@ -271,3 +276,8 @@ jobs:
           tags: ${{ matrix.registry.registry-url }}/${{ matrix.registry.registry-owner }}/${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           file: ${{ inputs.dockerfile }}
+      - name: Post Docker Build Log
+        run: |
+          echo "Completed Docker Build and Push"
+          echo "Used Tags: ${{ steps.meta.outputs.tags }}"
+          echo "Used Labels: ${{ steps.meta.outputs.labels }}"
