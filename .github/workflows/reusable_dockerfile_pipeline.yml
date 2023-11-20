@@ -15,7 +15,7 @@ on:
         default: "${{ github.repository }}"
 
 env:
-  REGISTRY: ghcr.io
+  GITHUB_REG: ghcr.io
   MAINTAINER: ${{ github.repository_owner }}
   DESCRIPTION: "${{ github.repository_owner }} repository ${{ github.repository }}"
 
@@ -23,6 +23,7 @@ jobs:
   prepare-env:
     runs-on: "ubuntu-latest"
     outputs:
+      repo_owner: ${{ steps.setting_env.outputs.repo_owner }}
       output_short_sha: ${{ steps.setting_env.outputs.short_sha }}
       output_image_name: ${{ steps.setting_env.outputs.image_name }}
       build_for_pr: ${{ steps.setting_logic.outputs.build_for_pr }}
@@ -35,25 +36,54 @@ jobs:
       - name: Add vars to ENV
         id: setting_env
         run: |
-          echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
-          echo "short_sha=`echo ${GITHUB_SHA} | cut -c1-8`" >> "$GITHUB_OUTPUT"
-          # yamllint disable
-          echo "IMAGE_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-          echo "image_name=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
-          # here we validate if we have specified a different package name in
-          # the inputs, if so, we change the package to it.
-          if [[ ${{ inputs.packageName }} != ${{ github.repository}} ]];then
-            # validate the input package name characters
-            if [[ ! "${{ inputs.packageName }}" =~ ^[A-Za-z0-9\-]+$ ]]; then
-              echo "------------------------------------------------------------"
-              echo "ERROR: Package name not valid! => [ ${{ inputs.packageName }} ]"
-              echo "ONLY can use: A-Za-z0-9\-"
-              echo "------------------------------------------------------------"
-              exit 1
-            fi
-            echo "IMAGE_NAME=$(echo ${{ github.repository_owner }}/${{ inputs.packageName }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-            echo "image_name=$(echo ${{ github.repository_owner }}/${{ inputs.packageName }} | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
-          fi
+          # Extract both the repository owner and repository name
+          # According to docs, github.repository is in the format of owner/repo, not just repo
+          # https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
+            REPO_OWNER=$(echo "${{ github.repository }}" | awk -F'/' '{print $1}' | tr '[:upper:]' '[:lower:]')
+            REPO_NAME=$(echo "${{ github.repository }}" | awk -F'/' '{print $2}' | tr '[:upper:]' '[:lower:]')
+
+            echo "Repository Owner: $REPO_OWNER"
+            echo "Repository Name: $REPO_NAME"
+
+            echo "REPO_OWNER=$REPO_OWNER" >> $GITHUB_ENV
+            echo "repo_owner=$REPO_OWNER" >> "$GITHUB_OUTPUT"
+
+            echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
+            echo "short_sha=`echo ${GITHUB_SHA} | cut -c1-8`" >> "$GITHUB_OUTPUT"
+            # yamllint disable
+              echo "${{ inputs.packageName }}"
+
+              if [[ "${{ inputs.packageName }}" == "${{ github.repository }}" ]]; then
+                # If a user submitted package name that has the naming containing
+                # both the repository owner and repository name, we fail
+                # e.g: inputs.packageName = "celestiaorg/celestiaorg" is not allowed
+                echo "------------------------------------------------------------"
+                echo "ERROR: Package name not valid! => [ $PACKAGE_NAME} ]"
+                echo "Don't use the repository owner and repository name in the package name."
+                echo "------------------------------------------------------------"
+                exit 1
+              fi
+
+              # If there is a user submitted package name, use it
+              if [[ -n "${{ inputs.packageName }}" ]]; then
+                PACKAGE_NAME=$(echo "${{ inputs.packageName }}" | tr '[:upper:]' '[:lower:]')
+              else
+                # Set the default package name to the repository name
+                PACKAGE_NAME=$REPO_NAME
+              fi
+
+              # validate the package name characters
+              if [[ ! $PACKAGE_NAME =~ ^[A-Za-z0-9\-]+$ ]]; then
+                echo "------------------------------------------------------------"
+                echo "ERROR: Package name not valid! => [ $PACKAGE_NAME} ]"
+                echo "ONLY can use: A-Za-z0-9\-"
+                echo "------------------------------------------------------------"
+                exit 1
+              fi
+
+              echo "IMAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
+              echo "image_name=$PACKAGE_NAME" >> "$GITHUB_OUTPUT"
+
           # yamllint enable
 
       # The key logic that we want to determine is whether or not we are working
@@ -135,23 +165,42 @@ jobs:
           severity: "CRITICAL,HIGH"
 
   docker-build:
+    name: docker-build (${{ matrix.registry.name }}; ${{ matrix.registry.registry-url }}/${{ matrix.registry.registry-owner }}/${{ needs.prepare-env.outputs.output_image_name }}:${{ needs.prepare-env.outputs.output_short_sha }})
     runs-on: "ubuntu-latest"
     # wait until the jobs are finished.
     needs: ["prepare-env", "logic-check", "docker-security"]
     permissions:
       contents: write
       packages: write
-
+    strategy:
+      matrix:
+        registry:
+          - name: DockerHub
+            user-secret: DOCKERHUB_USERNAME
+            token-secret: DOCKERHUB_TOKEN
+            registry-url: docker.io
+            registry-owner: celestiaorg
+          - name: GHCR
+            user-secret: ${{ github.repository_owner }}
+            token-secret: GITHUB_TOKEN
+            registry-url: ghcr.io
+            registry-owner: ${{ needs.prepare-env.outputs.repo_owner }}
+          - name: ScaleWay
+            user-secret: SCALEWAY_USERNAME
+            token-secret: SCW_SECRET_KEY
+            registry-url: rg.fr-par.scw.cloud
+            registry-owner: celestiaorg
+      fail-fast: false
     steps:
       - name: Checkout
         uses: "actions/checkout@v4"
 
-      - name: Login to GHCR
+      - name: Login to ${{ matrix.registry.name }}
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ${{ matrix.registry.registry-url }}
+          username: ${{ matrix.registry.registry-url == env.GITHUB_REG && matrix.registry.user-secret || secrets[matrix.registry.user-secret] }}
+          password: ${{ secrets[matrix.registry.token-secret] }}
 
       - name: Extract Docker Metadata
         id: meta
@@ -160,12 +209,12 @@ jobs:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
-          images: ${{ env.REGISTRY }}/${{ env.OUTPUT_IMAGE_NAME }}
+          images: ${{ matrix.registry.registry-url }}/${{ matrix.registry.registry-owner }}/${{ env.OUTPUT_IMAGE_NAME }}
           # yamllint disable
           labels: |
             maintainer=${{ env.MAINTAINER }}
             commitUrl=https://github.com/${{ github.repository }}/commit/${{ github.sha }}
-            dockerPull=docker pull ${{ env.REGISTRY }}/${{ github.repository }}:${{ env.OUTPUT_SHORT_SHA }}
+            dockerPull=docker pull ${{ matrix.registry.registry-url }}/${{ matrix.registry.registry-owner }}/${{ env.OUTPUT_IMAGE_NAME }}:${{ env.OUTPUT_SHORT_SHA }}
             org.opencontainers.image.description=${{ env.DESCRIPTION }}
           tags: |
             # output minimal (short sha)
@@ -176,33 +225,11 @@ jobs:
             type=ref,enable=true,prefix=pr-,suffix=,event=pr
           # yamllint enable
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      # Build amd64 images always, and publish when it is not a fork. The Github
-      # security model prevents forks from pushing to the registry so we can
-      # only push if the branch/PR is not generated from a fork. Even though
-      # forks can't push, we still want to try and build the image to catch
-      # bugs. For testing purposes we only need an amd64 image.
-      - name: "Pull Request Trigger: Build and Push amd64 Docker Image"
-        if: ${{ needs.prepare-env.outputs.build_for_pr == 'true' }}
-        uses: docker/build-push-action@v5
-        env:
-          OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
-          OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
-        with:
-          context: .
-          # We don't use the cache to reduce complexity. We've seen issues of
-          # the same commit from a PR and on main causing incorrect images being
-          # built.
-          no-cache: true
-          provenance: false
-          platforms: linux/amd64
-          # Only push if the head and base repos match, meaning it is not a fork
-          push: ${{ needs.prepare-env.outputs.not_a_fork == 'true' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          file: ${{ inputs.dockerfile }}
 
       # Build and Publish images on main, master, and versioned branches.
       #
@@ -218,13 +245,30 @@ jobs:
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
           context: .
-          # We don't use the cache to reduce complexity. We've seen issues of
-          # the same commit from a PR and on main causing incorrect images being
-          # built.
-          no-cache: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/arm64,linux/amd64
           provenance: false
           push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: ${{ inputs.dockerfile }}
+
+      # Build amd64 images always, and publish when it is not a fork. The Github
+      # security model prevents forks from pushing to the registry so we can
+      # only push if the branch/PR is not generated from a fork. Even though
+      # forks can't push, we still want to try and build the image to catch
+      # bugs. For testing purposes we only need an amd64 image.
+      - name: "Pull Request Trigger: Build and Push amd64 Docker Image"
+        if: ${{ needs.prepare-env.outputs.build_for_pr == 'true' }}
+        uses: docker/build-push-action@v5
+        env:
+          OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
+          OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
+        with:
+          context: .
+          platforms: linux/amd64
+          provenance: false
+          # Only push if the head and base repos match, meaning it is not a fork
+          push: ${{ needs.prepare-env.outputs.not_a_fork == 'true' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           file: ${{ inputs.dockerfile }}
