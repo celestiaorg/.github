@@ -52,12 +52,8 @@ jobs:
             echo "short_sha=`echo ${GITHUB_SHA} | cut -c1-8`" >> "$GITHUB_OUTPUT"
             # yamllint disable
               echo "${{ inputs.packageName }}"
-
-              # If there is a user submitted package name, use it
-              if [[ -n "${{ inputs.packageName }}" ]]; then
-                PACKAGE_NAME=$(echo "${{ inputs.packageName }}" | tr '[:upper:]' '[:lower:]')
-                echo "INSIDOOOOOR: $PACKAGE_NAME"
-              elif [[ "${{ inputs.packageName }}" == "${{ github.repository }}" ]]; then
+              
+              if [[ "${{ inputs.packageName }}" == "${{ github.repository }}" ]]; then
                 # If a user submitted package name that has the naming containing
                 # both the repository owner and repository name, we fail
                 # e.g: inputs.packageName = "celestiaorg/celestiaorg" is not allowed
@@ -66,6 +62,12 @@ jobs:
                 echo "Don't use the repository owner and repository name in the package name."
                 echo "------------------------------------------------------------"
                 exit 1
+              fi
+
+              # If there is a user submitted package name, use it
+              if [[ -n "${{ inputs.packageName }}" ]]; then
+                PACKAGE_NAME=$(echo "${{ inputs.packageName }}" | tr '[:upper:]' '[:lower:]')
+                echo "INSIDOOOOOR: $PACKAGE_NAME"
               else
                 # Set the default package name to the repository name
                 PACKAGE_NAME=$REPO_NAME
@@ -230,11 +232,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log Docker Tags and Labels
-        run: |
-          echo "Tags: ${{ steps.meta.outputs.tags }}"
-          echo "Labels: ${{ steps.meta.outputs.labels }}"
-
       # Build and Publish images on main, master, and versioned branches.
       #
       # The reason we split out these steps into 2 is for better handling of
@@ -276,8 +273,3 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           file: ${{ inputs.dockerfile }}
-      - name: Post Docker Build Log
-        run: |
-          echo "Completed Docker Build and Push"
-          echo "Used Tags: ${{ steps.meta.outputs.tags }}"
-          echo "Used Labels: ${{ steps.meta.outputs.labels }}"
