@@ -67,7 +67,6 @@ jobs:
               # If there is a user submitted package name, use it
               if [[ -n "${{ inputs.packageName }}" ]]; then
                 PACKAGE_NAME=$(echo "${{ inputs.packageName }}" | tr '[:upper:]' '[:lower:]')
-                echo "INSIDOOOOOR: $PACKAGE_NAME"
               else
                 # Set the default package name to the repository name
                 PACKAGE_NAME=$REPO_NAME
