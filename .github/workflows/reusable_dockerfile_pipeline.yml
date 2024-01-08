@@ -62,7 +62,7 @@ jobs:
                 echo "------------------------------------------------------------"
                 exit 1
               fi
-                
+
               # Set the default package name to the repository name
               PACKAGE_NAME=$REPO_NAME
 
