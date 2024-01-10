@@ -41,6 +41,12 @@ jobs:
           REPO_OWNER=$(echo "${{ github.repository }}" | awk -F'/' '{print $1}' | tr '[:upper:]' '[:lower:]')
           REPO_NAME=$(echo "${{ github.repository }}" | awk -F'/' '{print $2}' | tr '[:upper:]' '[:lower:]')
 
+          # Check repo name for .github use to test this workflow
+          if [[ $REPO_NAME == ".github" ]]; then
+            # Remove the leading . to avoid failing the character check
+            REPO_NAME="github"
+          fi
+
           # Log variables for debugging
           echo "Repository Owner: $REPO_OWNER"
           echo "Repository Name: $REPO_NAME"
@@ -51,7 +57,6 @@ jobs:
           echo "repo_owner=$REPO_OWNER" >> "$GITHUB_OUTPUT"
           echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
           echo "short_sha=`echo ${GITHUB_SHA} | cut -c1-8`" >> "$GITHUB_OUTPUT"
-
 
           if [[ "${{ inputs.packageName }}" == "${{ github.repository }}" ]]; then
             # If a user submitted package name that has the naming containing
