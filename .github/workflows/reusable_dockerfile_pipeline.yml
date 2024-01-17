@@ -12,7 +12,6 @@ on:
         required: false
         type: string
         description: "You can specify a different package name."
-        default: "${{ github.repository }}"
 
 env:
   GITHUB_REG: ghcr.io
@@ -39,52 +38,60 @@ jobs:
           # Extract both the repository owner and repository name
           # According to docs, github.repository is in the format of owner/repo, not just repo
           # https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
-            REPO_OWNER=$(echo "${{ github.repository }}" | awk -F'/' '{print $1}' | tr '[:upper:]' '[:lower:]')
-            REPO_NAME=$(echo "${{ github.repository }}" | awk -F'/' '{print $2}' | tr '[:upper:]' '[:lower:]')
+          REPO_OWNER=$(echo "${{ github.repository }}" | awk -F'/' '{print $1}' | tr '[:upper:]' '[:lower:]')
+          REPO_NAME=$(echo "${{ github.repository }}" | awk -F'/' '{print $2}' | tr '[:upper:]' '[:lower:]')
 
-            echo "Repository Owner: $REPO_OWNER"
-            echo "Repository Name: $REPO_NAME"
+          # Check repo name for .github use to test this workflow
+          if [[ $REPO_NAME == ".github" ]]; then
+            # Remove the leading . to avoid failing the character check
+            REPO_NAME="github"
+          fi
 
-            echo "REPO_OWNER=$REPO_OWNER" >> $GITHUB_ENV
-            echo "repo_owner=$REPO_OWNER" >> "$GITHUB_OUTPUT"
+          # Log variables for debugging
+          echo "Repository Owner: $REPO_OWNER"
+          echo "Repository Name: $REPO_NAME"
+          echo "INPUT PACKAGE NAME: ${{ inputs.packageName }}"
 
-            echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
-            echo "short_sha=`echo ${GITHUB_SHA} | cut -c1-8`" >> "$GITHUB_OUTPUT"
-            # yamllint disable
-              echo "${{ inputs.packageName }}"
+          # Set environment variables and outputs
+          echo "REPO_OWNER=$REPO_OWNER" >> $GITHUB_ENV
+          echo "repo_owner=$REPO_OWNER" >> "$GITHUB_OUTPUT"
+          echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
+          echo "short_sha=`echo ${GITHUB_SHA} | cut -c1-8`" >> "$GITHUB_OUTPUT"
 
-              if [[ "${{ inputs.packageName }}" == "${{ github.repository }}" ]]; then
-                # If a user submitted package name that has the naming containing
-                # both the repository owner and repository name, we fail
-                # e.g: inputs.packageName = "celestiaorg/celestiaorg" is not allowed
-                echo "------------------------------------------------------------"
-                echo "ERROR: Package name not valid! => [ $PACKAGE_NAME} ]"
-                echo "Don't use the repository owner and repository name in the package name."
-                echo "------------------------------------------------------------"
-                exit 1
-              fi
+          if [[ "${{ inputs.packageName }}" == "${{ github.repository }}" ]]; then
+            # If a user submitted package name that has the naming containing
+            # both the repository owner and repository name, we fail
+            # e.g: inputs.packageName = "celestiaorg/celestiaorg" is not allowed
+            echo "------------------------------------------------------------"
+            echo "ERROR: Package name not valid! => [ ${{ inputs.packageName }} ]"
+            echo "Don't use the repository owner and repository name in the package name."
+            echo "------------------------------------------------------------"
+            exit 1
+          fi
 
-              # If there is a user submitted package name, use it
-              if [[ -n "${{ inputs.packageName }}" ]]; then
-                PACKAGE_NAME=$(echo "${{ inputs.packageName }}" | tr '[:upper:]' '[:lower:]')
-              else
-                # Set the default package name to the repository name
-                PACKAGE_NAME=$REPO_NAME
-              fi
+          # Set the default package name to the repository name
+          PACKAGE_NAME=$REPO_NAME
 
-              # validate the package name characters
-              if [[ ! $PACKAGE_NAME =~ ^[A-Za-z0-9\-]+$ ]]; then
-                echo "------------------------------------------------------------"
-                echo "ERROR: Package name not valid! => [ $PACKAGE_NAME} ]"
-                echo "ONLY can use: A-Za-z0-9\-"
-                echo "------------------------------------------------------------"
-                exit 1
-              fi
+          # If there is a user submitted package name, use it
+          if [[ -n "${{ inputs.packageName }}" ]]; then
+            PACKAGE_NAME=$(echo "${{ inputs.packageName }}" | tr '[:upper:]' '[:lower:]')
+          fi
 
-              echo "IMAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
-              echo "image_name=$PACKAGE_NAME" >> "$GITHUB_OUTPUT"
+          # validate the package name characters
+          if [[ ! $PACKAGE_NAME =~ ^[A-Za-z0-9\-]+$ ]]; then
+            echo "------------------------------------------------------------"
+            echo "ERROR: Package name not valid! => [ $PACKAGE_NAME ]"
+            echo "ONLY can use: A-Za-z0-9\-"
+            echo "------------------------------------------------------------"
+            exit 1
+          fi
 
-          # yamllint enable
+          # Log the package name for debugging
+          echo "PACKAGE_NAME: $PACKAGE_NAME"
+
+          # Set environment variables and outputs
+          echo "IMAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
+          echo "image_name=$PACKAGE_NAME" >> "$GITHUB_OUTPUT"
 
       # The key logic that we want to determine is whether or not we are working
       # on a fork and if this is a pull request or merge to main.
