@@ -173,6 +173,8 @@ jobs:
 
   docker-build:
     name: docker-build (${{ matrix.registry.name }}; ${{ matrix.registry.registry-url }}/${{ matrix.registry.registry-owner }}/${{ needs.prepare-env.outputs.output_image_name }})
+    # We only want to run when the registry is able to run on pr or if it is a merge event
+    if: ${{ matrix.registry.run-on-pr == build_for_pr || needs.prepare-env.outputs.build_for_merge == 'true'}}
     runs-on: "ubuntu-latest"
     # wait until the jobs are finished.
     needs: ["prepare-env", "logic-check", "docker-security"]
@@ -181,22 +183,27 @@ jobs:
       packages: write
     strategy:
       matrix:
+        # run-on-pr is used to skip running registries that are expected to fail
+        # due to github permission issues with org wide secrets.
         registry:
           - name: DockerHub
             user-secret: DOCKERHUB_USERNAME
             token-secret: DOCKERHUB_TOKEN
             registry-url: docker.io
             registry-owner: celestiaorg
+            run-on-pr: false
           - name: GHCR
             user-secret: ${{ github.repository_owner }}
             token-secret: GITHUB_TOKEN
             registry-url: ghcr.io
             registry-owner: ${{ needs.prepare-env.outputs.repo_owner }}
+            run-on-pr: true
           - name: ScaleWay
             user-secret: SCALEWAY_USERNAME
             token-secret: SCW_SECRET_KEY
             registry-url: rg.fr-par.scw.cloud
             registry-owner: celestiaorg
+            run-on-pr: false
       fail-fast: false
     steps:
       - name: Checkout
