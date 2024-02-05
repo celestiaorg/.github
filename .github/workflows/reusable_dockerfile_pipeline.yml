@@ -189,25 +189,25 @@ jobs:
             token-secret: DOCKERHUB_TOKEN
             registry-url: docker.io
             registry-owner: celestiaorg
-            run-on-pr: false
+            run-on-pr: "false"
           - name: GHCR
             user-secret: ${{ github.repository_owner }}
             token-secret: GITHUB_TOKEN
             registry-url: ghcr.io
             registry-owner: ${{ needs.prepare-env.outputs.repo_owner }}
-            run-on-pr: true
+            run-on-pr: "true"
           - name: ScaleWay
             user-secret: SCALEWAY_USERNAME
             token-secret: SCW_SECRET_KEY
             registry-url: rg.fr-par.scw.cloud
             registry-owner: celestiaorg
-            run-on-pr: false
+            run-on-pr: "false"
       fail-fast: false
     steps:
       - name: Check run conditions
         id: run_check
         # We only want to run when the registry is able to run on pr or if it is a merge event
-        run: echo "run=${{ matrix.registry.run-on-pr == needs.prepare-env.outputs.build_for_pr || needs.prepare-env.outputs.build_for_merge == 'true'}}" >> $GITHUB_OUTPUT"
+        run: echo "run=${{ matrix.registry.run-on-pr == needs.prepare-env.outputs.build_for_pr || needs.prepare-env.outputs.build_for_merge == 'true'}}" >> "$GITHUB_OUTPUT"
 
       - name: Checkout
         if: ${{ steps.run_check.outputs.run == 'true'}}
