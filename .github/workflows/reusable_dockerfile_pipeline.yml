@@ -173,8 +173,6 @@ jobs:
 
   docker-build:
     name: docker-build (${{ matrix.registry.name }}; ${{ matrix.registry.registry-url }}/${{ matrix.registry.registry-owner }}/${{ needs.prepare-env.outputs.output_image_name }})
-    # We only want to run when the registry is able to run on pr or if it is a merge event
-    if: ${{ matrix.registry.run-on-pr == build_for_pr || needs.prepare-env.outputs.build_for_merge == 'true'}}
     runs-on: "ubuntu-latest"
     # wait until the jobs are finished.
     needs: ["prepare-env", "logic-check", "docker-security"]
@@ -206,10 +204,17 @@ jobs:
             run-on-pr: false
       fail-fast: false
     steps:
+      - name: Check run conditions
+        id: run_check
+        # We only want to run when the registry is able to run on pr or if it is a merge event
+        run: echo "run=${{ matrix.registry.run-on-pr == needs.prepare-env.outputs.build_for_pr || needs.prepare-env.outputs.build_for_merge == 'true'}}" >> $GITHUB_OUTPUT"
+
       - name: Checkout
+        if: ${{ steps.run_check.outputs.run == 'true'}}
         uses: "actions/checkout@v4"
 
       - name: Login to ${{ matrix.registry.name }}
+        if: ${{ steps.run_check.outputs.run == 'true'}}
         uses: docker/login-action@v3
         with:
           registry: ${{ matrix.registry.registry-url }}
@@ -217,6 +222,7 @@ jobs:
           password: ${{ secrets[matrix.registry.token-secret] }}
 
       - name: Extract Docker Metadata
+        if: ${{ steps.run_check.outputs.run == 'true'}}
         id: meta
         uses: docker/metadata-action@v5
         env:
@@ -240,9 +246,11 @@ jobs:
           # yamllint enable
 
       - name: Set up QEMU
+        if: ${{ steps.run_check.outputs.run == 'true'}}
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
+        if: ${{ steps.run_check.outputs.run == 'true'}}
         uses: docker/setup-buildx-action@v3
 
       # Build and Publish images on main, master, and versioned branches.
@@ -252,7 +260,7 @@ jobs:
       # the amd64 image since building the arm64 image takes significantly
       # longer.
       - name: "Merge on Main Trigger: Build and Push All Docker Images"
-        if: ${{ needs.prepare-env.outputs.build_for_merge == 'true' }}
+        if: ${{ needs.prepare-env.outputs.build_for_merge == 'true' && steps.run_check.outputs.run == 'true'}}
         uses: docker/build-push-action@v5
         env:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
@@ -272,7 +280,7 @@ jobs:
       # forks can't push, we still want to try and build the image to catch
       # bugs. For testing purposes we only need an amd64 image.
       - name: "Pull Request Trigger: Build and Push amd64 Docker Image"
-        if: ${{ needs.prepare-env.outputs.build_for_pr == 'true' }}
+        if: ${{ needs.prepare-env.outputs.build_for_pr == 'true' && steps.run_check.outputs.run == 'true'}}
         uses: docker/build-push-action@v5
         env:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
