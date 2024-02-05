@@ -41,22 +41,22 @@ jobs:
           REPO_OWNER=$(echo "${{ github.repository }}" | awk -F'/' '{print $1}' | tr '[:upper:]' '[:lower:]')
           REPO_NAME=$(echo "${{ github.repository }}" | awk -F'/' '{print $2}' | tr '[:upper:]' '[:lower:]')
 
-          # Check for testing this workflow in this repo.
+          # Check repo name for .github use to test this workflow
           if [[ $REPO_NAME == ".github" ]]; then
             # Remove the leading . to avoid failing the character check
             REPO_NAME="github"
           fi
 
+          # Log variables for debugging
           echo "Repository Owner: $REPO_OWNER"
           echo "Repository Name: $REPO_NAME"
+          echo "INPUT PACKAGE NAME: ${{ inputs.packageName }}"
 
+          # Set environment variables and outputs
           echo "REPO_OWNER=$REPO_OWNER" >> $GITHUB_ENV
           echo "repo_owner=$REPO_OWNER" >> "$GITHUB_OUTPUT"
-
           echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
           echo "short_sha=`echo ${GITHUB_SHA} | cut -c1-8`" >> "$GITHUB_OUTPUT"
-
-          echo "INPUT PACKAGE NAME: ${{ inputs.packageName }}"
 
           if [[ "${{ inputs.packageName }}" == "${{ github.repository }}" ]]; then
             # If a user submitted package name that has the naming containing
@@ -86,7 +86,10 @@ jobs:
             exit 1
           fi
 
+          # Log the package name for debugging
           echo "PACKAGE_NAME: $PACKAGE_NAME"
+
+          # Set environment variables and outputs
           echo "IMAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
           echo "image_name=$PACKAGE_NAME" >> "$GITHUB_OUTPUT"
 
