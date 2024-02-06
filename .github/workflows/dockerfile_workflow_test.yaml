@@ -3,7 +3,7 @@
 # to build and push the Docker image to the container registries.
 #
 # The reason this workflow targets the develop branch is so that we can test the
-# action in the PR. If we targeted main, we would need to merge changes in
+# action in the PR. If we targeted main, we would need to merge changes into main
 # before being able to test them.
 #
 name: Build Using Reusable Workflow
