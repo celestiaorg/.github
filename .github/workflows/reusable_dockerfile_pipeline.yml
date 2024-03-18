@@ -141,7 +141,7 @@ jobs:
       - name: Checkout
         uses: "actions/checkout@v4"
 
-      - name: Build and Push
+      - name: Build
         uses: docker/build-push-action@v5
         env:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
