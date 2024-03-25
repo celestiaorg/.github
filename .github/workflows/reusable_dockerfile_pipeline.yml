@@ -179,11 +179,13 @@ jobs:
     runs-on: "ubuntu-latest"
     # wait until the jobs are finished.
     needs: ["prepare-env", "logic-check", "docker-security"]
-    # Don't run if both logic flags are false. This is the case for push events
-    # on PR commits.
+    # We only want to run this step if one of the build flags is true. We don't
+    # run if both logic flags are false. This is the case for push events on PR
+    # commits. The logic-check job protects us from the case of both build flags
+    # being equal to true.
     if: |
-      needs.prepare-env.outputs.build_for_pr == 'false'
-      && needs.prepare-env.outputs.build_for_merge == 'false'
+      needs.prepare-env.outputs.build_for_pr == 'true'
+      || needs.prepare-env.outputs.build_for_merge == 'true'
     permissions:
       contents: write
       packages: write
