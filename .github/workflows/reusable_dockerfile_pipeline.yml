@@ -113,8 +113,9 @@ jobs:
           # yamllint enable
 
   # Log the key inputs to the logic as well a the outputs. We check that
-  # build_for_pr and build_for_merge are never equal as that would indicate a
-  # bug.
+  # build_for_pr and build_for_merge are never equal when they are true as that
+  # would indicate a bug. If they are both false, this is ok, as this is the
+  # case on pushing commits to a PR.
   logic-check:
     needs: prepare-env
     runs-on: "ubuntu-latest"
@@ -129,7 +130,9 @@ jobs:
           echo "build_for_merge: ${{ needs.prepare-env.outputs.build_for_merge }}"
           echo "not_a_fork: ${{ needs.prepare-env.outputs.not_a_fork }}"
       - name: Check logic
-        if: ${{ needs.prepare-env.outputs.build_for_pr == needs.prepare-env.outputs.build_for_merge }}
+        if: |
+          (needs.prepare-env.outputs.build_for_pr == needs.prepare-env.outputs.build_for_merge)
+          && needs.prepare-env.outputs.build_for_pr != 'false'
         run: |
           echo "Failing step due to build_for_pr == build_for_merge"
           exit 1
