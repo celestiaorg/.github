@@ -212,6 +212,10 @@ jobs:
         # We only want to run when the registry is able to run on PR or if it is a merge event
         run: echo "run=${{ matrix.registry.run-on-pr == needs.prepare-env.outputs.build_for_pr || needs.prepare-env.outputs.build_for_merge == 'true'}}" >> "$GITHUB_OUTPUT"
 
+      - name: Quit Early
+        if: ${{ steps.run_check.outputs.run == 'false'}}
+        run: exit 0
+
       - name: Checkout
         if: ${{ steps.run_check.outputs.run == 'true'}}
         uses: "actions/checkout@v4"
