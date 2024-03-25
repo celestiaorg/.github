@@ -182,8 +182,8 @@ jobs:
     # Don't run if both logic flags are false. This is the case for push events
     # on PR commits.
     if: |
-      needs.prepare-env.outputs.build_for_pr != 'false'
-      && needs.prepare-env.outputs.build_for_merge != 'false'
+      needs.prepare-env.outputs.build_for_pr == 'false'
+      && needs.prepare-env.outputs.build_for_merge == 'false'
     permissions:
       contents: write
       packages: write
