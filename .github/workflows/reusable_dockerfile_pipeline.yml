@@ -141,7 +141,7 @@ jobs:
       - name: Checkout
         uses: "actions/checkout@v4"
 
-      - name: Build and Push
+      - name: Build
         uses: docker/build-push-action@v5
         env:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
@@ -206,7 +206,7 @@ jobs:
     steps:
       - name: Check run conditions
         id: run_check
-        # We only want to run when the registry is able to run on pr or if it is a merge event
+        # We only want to run when the registry is able to run on PR or if it is a merge event
         run: echo "run=${{ matrix.registry.run-on-pr == needs.prepare-env.outputs.build_for_pr || needs.prepare-env.outputs.build_for_merge == 'true'}}" >> "$GITHUB_OUTPUT"
 
       - name: Checkout
