@@ -70,7 +70,7 @@ jobs:
             ```[tasklist]
             ### Pre-work
             - [ ] Confirm release tested on Robusta
-            - [ ] App and Node compatibility confirmed
+            - [ ] App and Node compatibility confirmed (protocol team)
             - [ ] Release notes reviewed
             ```
             ```[tasklist]
@@ -78,7 +78,7 @@ jobs:
             - [ ] Prepare deployment to Arabica
             - [ ] Prepare announcement for Arabica
             - [ ] Deploy to Arabica
-            - [ ] Verify release on Arabica
+            - [ ] Verify release on Arabica (protocol team)
             - [ ] Docs updated for release for Arabica
             - [ ] Announce release for Arabica
             ```
@@ -87,7 +87,7 @@ jobs:
             - [ ] Prepare deployment to Mocha
             - [ ] Prepare announcement for Mocha
             - [ ] Deploy to Mocha
-            - [ ] Verify release on Mocha
+            - [ ] Verify release on Mocha (protocol team)
             - [ ] Docs updated for release for Mocha
             - [ ] Announce release for Mocha
             ```
@@ -96,7 +96,7 @@ jobs:
             - [ ] Prepare deployment for mainnet
             - [ ] Prepare announcement for mainnet
             - [ ] Deploy to mainnet
-            - [ ] Verify release on mainnet
+            - [ ] Verify release on mainnet (protocol team)
             - [ ] Docs updated for release for mainnet
             - [ ] Announce release for mainnet
             ```
