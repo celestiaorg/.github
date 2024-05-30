@@ -12,6 +12,11 @@ on:
         required: false
         type: string
         description: "You can specify a different package name."
+      dockerContext:
+        required: false
+        type: string
+        description: "The docker context"
+        default: "."
 
 env:
   GITHUB_REG: ghcr.io
@@ -150,7 +155,7 @@ jobs:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
-          context: .
+          context: ${{ inputs.dockerContext}}
           push: false
           platforms: linux/amd64
           # we're building the container before the scan, use the short sha tag
@@ -276,7 +281,7 @@ jobs:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
-          context: .
+          context: ${{ inputs.dockerContext}}
           platforms: linux/arm64,linux/amd64
           provenance: false
           push: true
@@ -296,7 +301,7 @@ jobs:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
-          context: .
+          context: ${{ inputs.dockerContext}}
           platforms: linux/amd64
           provenance: false
           # Only push if the head and base repos match, meaning it is not a fork
