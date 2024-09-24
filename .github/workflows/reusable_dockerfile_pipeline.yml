@@ -17,6 +17,10 @@ on:
         type: string
         description: "The docker context"
         default: "."
+      checkout_ref:
+        required: false
+        type: string
+        description: "Specific checkout reference"
 
 env:
   GITHUB_REG: ghcr.io
@@ -36,6 +40,8 @@ jobs:
     steps:
       - name: Checkout
         uses: "actions/checkout@v4"
+        with:
+          ref: ${{ inputs.checkout_ref }}
 
       - name: Add vars to ENV
         id: setting_env
@@ -148,6 +154,8 @@ jobs:
     steps:
       - name: Checkout
         uses: "actions/checkout@v4"
+        with:
+          ref: ${{ inputs.checkout_ref }}
 
       - name: Build
         uses: docker/build-push-action@v5
@@ -227,6 +235,8 @@ jobs:
       - name: Checkout
         if: ${{ steps.run_check.outputs.run == 'true'}}
         uses: "actions/checkout@v4"
+        with:
+          ref: ${{ inputs.checkout_ref }}
 
       - name: Login to ${{ matrix.registry.name }}
         if: ${{ steps.run_check.outputs.run == 'true'}}
