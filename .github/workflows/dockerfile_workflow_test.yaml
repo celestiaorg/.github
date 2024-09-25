@@ -7,7 +7,15 @@
 # before being able to test them.
 #
 name: Build Using Reusable Workflow
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: The checkout ref
+        required: true
+        type: string
 jobs:
   # reusable-build tests calling the reusable_dockerfile_pipeline while
   # providing a custom packageName
@@ -19,6 +27,7 @@ jobs:
     with:
       dockerfile: docker-action-test/Dockerfile
       packageName: docker-test
+      checkout_ref: ${{ inputs.ref }}
     secrets: inherit
 
   # reusable-build-defaults tests calling the reusable_dockerfile_pipeline with
@@ -30,4 +39,5 @@ jobs:
     uses: celestiaorg/.github/.github/workflows/reusable_dockerfile_pipeline.yml@develop
     with:
       dockerfile: docker-action-test/Dockerfile
+      checkout_ref: ${{ inputs.ref }}
     secrets: inherit
