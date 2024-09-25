@@ -268,6 +268,8 @@ jobs:
             type=semver,pattern={{raw}}
             # pull request event
             type=ref,enable=true,prefix=pr-,suffix=,event=pr
+            # This if for the workflow dispath events, it is type=raw and should be empty by default 
+            ${{ inputs.checkout_ref }}
           # yamllint enable
 
       - name: Set up QEMU
