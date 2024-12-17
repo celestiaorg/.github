@@ -275,11 +275,6 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       # Build and Publish images on main, master, and versioned branches.
-      #
-      # The reason we split out these steps into 2 is for better handling of
-      # forks when building amd64 images and to enable faster availability of
-      # the amd64 image since building the arm64 image takes significantly
-      # longer.
       - name: "Merge on Main Trigger: Build and Push All Docker Images"
         if: ${{ needs.prepare-env.outputs.build_for_merge == 'true' && steps.run_check.outputs.run == 'true'}}
         uses: docker/build-push-action@v5
