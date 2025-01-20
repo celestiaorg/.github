@@ -20,7 +20,7 @@ git merge "typo-pr-branch" --squash
 # Step 3: Commit squash commit to new branch
 echo "Creating new local branch $NEW_BRANCH"
 git checkout -b $NEW_BRANCH
-git commit -a --author="celestia-bot <devops@celestia.org>" -m "chore: redo typo PR"
+git commit -a --author="${{ secrets.CELESTIA_BOT_GITHUB_USERNAME }} <${{ secrets.CELESTIA_BOT_GITHUB_EMAIL }}>" -m "chore: redo typo PR"
 
 # Step 4: Push the new branch to GitHub
 echo "Pushing new branch $NEW_BRANCH to GitHub"
