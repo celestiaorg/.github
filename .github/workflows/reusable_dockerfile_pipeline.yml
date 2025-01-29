@@ -262,7 +262,7 @@ jobs:
             type=semver,pattern={{raw}}
             # pull request event
             type=ref,enable=true,prefix=pr-,suffix=,event=pr
-            # This if for the workflow dispath events, it is type=raw and should be empty by default 
+            # This if for the workflow dispath events, it is type=raw and should be empty by default
             ${{ inputs.checkout_ref }}
           # yamllint enable
 
@@ -275,11 +275,6 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       # Build and Publish images on main, master, and versioned branches.
-      #
-      # The reason we split out these steps into 2 is for better handling of
-      # forks when building amd64 images and to enable faster availability of
-      # the amd64 image since building the arm64 image takes significantly
-      # longer.
       - name: "Merge on Main Trigger: Build and Push All Docker Images"
         if: ${{ needs.prepare-env.outputs.build_for_merge == 'true' && steps.run_check.outputs.run == 'true'}}
         uses: docker/build-push-action@v5
@@ -291,27 +286,6 @@ jobs:
           platforms: linux/arm64,linux/amd64
           provenance: false
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          file: ${{ inputs.dockerfile }}
-
-      # Build amd64 images always, and publish when it is not a fork. The Github
-      # security model prevents forks from pushing to the registry so we can
-      # only push if the branch/PR is not generated from a fork. Even though
-      # forks can't push, we still want to try and build the image to catch
-      # bugs. For testing purposes we only need an amd64 image.
-      - name: "Pull Request Trigger: Build and Push amd64 Docker Image"
-        if: ${{ needs.prepare-env.outputs.build_for_pr == 'true' && steps.run_check.outputs.run == 'true'}}
-        uses: docker/build-push-action@v5
-        env:
-          OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
-          OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
-        with:
-          context: ${{ inputs.dockerContext}}
-          platforms: linux/amd64
-          provenance: false
-          # Only push if the head and base repos match, meaning it is not a fork
-          push: ${{ needs.prepare-env.outputs.not_a_fork == 'true' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           file: ${{ inputs.dockerfile }}
