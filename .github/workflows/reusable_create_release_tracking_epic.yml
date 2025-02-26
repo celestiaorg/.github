@@ -1,0 +1,117 @@
+name: Create Release Tracking Epic
+
+# This workflow creates an EPIC for tracking the deployment of a release to
+# testnets and mainnet.
+#
+# Example workflow to be used in repository calling this workflow.
+# This would trigger on published releases
+#
+# name: Release Trigger Issue
+# on:
+#   release:
+#     types: [published]
+# jobs:
+#   trigger_issue:
+#     uses: celestiaorg/.github/.github/workflows/reusable_release_tracking_epic.yml
+#     secrets: inherit
+#     with:
+#       release-repo: ${{ github.repository }}
+#       release-version: ${{ github.event.release.tag_name }}
+#
+
+on:
+  # workflow_dispatch is used to manually test this workflow
+  workflow_dispatch:
+    inputs:
+      release-repo:
+        required: true
+        type: string
+        description: "Which repo is triggering this release?"
+      release-version:
+        required: true
+        type: string
+        description: "What is the version triggering this release?"
+  # workflow_call is the primary trigger to be used for this workflow
+  workflow_call:
+    inputs:
+      release-repo:
+        required: true
+        type: string
+        description: "Which repo is triggering this release?"
+      release-version:
+        required: true
+        type: string
+        description: "What is the version triggering this release?"
+
+jobs:
+  create_issue:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: dacbd/create-issue-action@v2
+        id: create-issue
+        with:
+          # This is an org level secret. No changes needed at the repo level
+          token: ${{ secrets.CREATE_RELEASE_EPIC }}
+          owner: celestiaorg
+          # Create the tracking issue in devops as devops is responsible for
+          # updating the networks
+          repo: devops
+          # Currently unable to assign a group to an issue, so assigning MSevey
+          # as issue owner.
+          assignees: MSevey
+          # Title and body and free to change based on the team's needs
+          title: ${{inputs.release-repo}} ${{inputs.release-version}} Release Deployment Tracking
+          body: |
+            ## Release Checklist
+            ```[tasklist]
+            ### Pre-work
+            - [ ] Confirm release tested on Robusta
+            - [ ] App and Node compatibility confirmed (protocol team)
+            - [ ] Release notes reviewed
+            ```
+            ```[tasklist]
+            ### Stage 1: Arabica
+            - [ ] Prepare deployment to Arabica
+            - [ ] Prepare announcement for Arabica
+            - [ ] Deploy to Arabica
+            - [ ] Verify release on Arabica (protocol team)
+            - [ ] Docs updated for release for Arabica
+            - [ ] Announce release for Arabica
+            ```
+            ```[tasklist]
+            ### Stage 2: Mocha
+            - [ ] Prepare deployment to Mocha
+            - [ ] Prepare announcement for Mocha
+            - [ ] Deploy to Mocha
+            - [ ] Verify release on Mocha (protocol team)
+            - [ ] Docs updated for release for Mocha
+            - [ ] Announce release for Mocha
+            ```
+            ```[tasklist]
+            ### Stage 3: Mainnet
+            - [ ] Prepare deployment for mainnet
+            - [ ] Prepare announcement for mainnet
+            - [ ] Deploy to mainnet
+            - [ ] Verify release on mainnet (protocol team)
+            - [ ] Docs updated for release for mainnet
+            - [ ] Announce release for mainnet
+            ```
+            cc @celestiaorg/devops
+
+      - uses: ravsamhq/notify-slack-action@v2
+        with:
+          status: ${{ job.status }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          notification_title: "New Release for Deployment"
+          message_format: "{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>"
+          footer: "Linked Issue <${{steps.create-issue.outputs.html_url}}>"
+          # This is the devops user group
+          mention_groups: "S04MZ965WQZ"
+        env:
+          # This is an org level secret and is currently set to #releases in
+          # slack
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_RELEASE_CHANNEL }}

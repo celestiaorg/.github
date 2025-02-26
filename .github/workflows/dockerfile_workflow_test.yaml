@@ -1,6 +1,28 @@
+#
+# This workflow is used to test the `reusable_dockerfile_pipeline` action used
+# to build and push the Docker image to the container registries.
+#
+# The reason this workflow targets the develop branch is so that we can test the
+# action in the PR. If we targeted main, we would need to merge changes into main
+# before being able to test them.
+#
 name: Build Using Reusable Workflow
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: The checkout ref
+        required: true
+        type: string
 jobs:
+  # reusable-build tests calling the reusable_dockerfile_pipeline while
+  # providing a custom packageName
   reusable-build:
     permissions:
       contents: write
@@ -9,4 +31,17 @@ jobs:
     with:
       dockerfile: docker-action-test/Dockerfile
       packageName: docker-test
+      checkout_ref: ${{ inputs.ref }}
+    secrets: inherit
+
+  # reusable-build-defaults tests calling the reusable_dockerfile_pipeline with
+  # the defaults
+  reusable-build-defaults:
+    permissions:
+      contents: write
+      packages: write
+    uses: celestiaorg/.github/.github/workflows/reusable_dockerfile_pipeline.yml@develop
+    with:
+      dockerfile: docker-action-test/Dockerfile
+      checkout_ref: ${{ inputs.ref }}
     secrets: inherit
