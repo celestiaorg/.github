@@ -82,7 +82,7 @@ ADRs to ensure all the necessary information is captured.
 Before opening a PR, make sure that the scope of work was previously
 communicated, either via an ADR or an issue. Submitting code that has no
 background context is likely to be rejected because the implication and design
-has not been properly discussed.
+has not been properly discussed. Also note that, low-impact/low-effort PRs submitted with the aim of claiming rewards are not allowed. If we suspect this is the intent of a PR, we may close it without comment.
 
 The Celestia team has a culture of prioritizing the review of PRs. This
 prioritization focuses on unblocking others and finishing existing work before
