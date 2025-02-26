@@ -7,7 +7,7 @@ on:
         description: "Path to Tests"
         required: true
         type: string
-        default: "compositions/cluster-k8s/sanity/002-da-sync-8.toml"
+        # default: "compositions/cluster-k8s/sanity/002-da-sync-8.toml"
       testground_url:
         required: true
         type: string
@@ -16,7 +16,7 @@ on:
         required: true
         type: string
         description: "TestGround Cluster Region"
-        default: "eu-west-1"
+        # default: "eu-west-1"
       celestia_node_commit_sha:
         required: false
         type: string
