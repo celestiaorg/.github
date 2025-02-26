@@ -158,7 +158,7 @@ jobs:
   #         ref: ${{ inputs.checkout_ref }}
 
   #     - name: Build
-  #       uses: docker/build-push-action@v5
+  #       uses: docker/build-push-action@v6
   #       env:
   #         OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
   #         OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
@@ -277,7 +277,7 @@ jobs:
       # Build and Publish images on main, master, and versioned branches.
       - name: "Merge on Main Trigger: Build and Push All Docker Images"
         if: ${{ needs.prepare-env.outputs.build_for_merge == 'true' && steps.run_check.outputs.run == 'true'}}
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         env:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
