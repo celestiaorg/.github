@@ -1,7 +1,7 @@
 name: Redo Typo PR
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       pr_number:
         description: 'The PR number to redo'
