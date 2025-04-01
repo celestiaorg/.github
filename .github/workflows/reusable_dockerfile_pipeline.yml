@@ -21,6 +21,11 @@ on:
         required: false
         type: string
         description: "Specific checkout reference"
+      buildArgs:
+        required: false
+        type: string
+        description: "Multiline string of build args"
+        default: ""
 
 env:
   GITHUB_REG: ghcr.io
@@ -289,3 +294,4 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           file: ${{ inputs.dockerfile }}
+          build-args: ${{ inputs.buildArgs }}
