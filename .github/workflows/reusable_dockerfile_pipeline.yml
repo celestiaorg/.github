@@ -24,8 +24,13 @@ on:
       buildArgs:
         required: false
         type: string
-        description: "Multiline string of build args"
+        description: 'string containing a space separated list build args e.g. "TARGETOS=linux TARGETARCH=amd64"'
         default: ""
+      enableForPRs:
+        required: false
+        type: boolean
+        description: "specify as true if you want to push the image built and pushed from PRs"
+        default: false
 
 env:
   GITHUB_REG: ghcr.io
@@ -279,9 +284,24 @@ jobs:
         if: ${{ steps.run_check.outputs.run == 'true'}}
         uses: docker/setup-buildx-action@v3
 
-      # Build and Publish images on main, master, and versioned branches.
-      - name: "Merge on Main Trigger: Build and Push All Docker Images"
-        if: ${{ needs.prepare-env.outputs.build_for_merge == 'true' && steps.run_check.outputs.run == 'true'}}
+        # the build-push-action.build-args argument expects a newline separated string.
+        # when you pass a string to a re-usable workflow, it is interpreted as a single line.
+        # this step converts that single line into a multi line string so it is correctly interpreted as
+        # build arguments.
+      - name: Convert buildArgs to newline-delimited string
+        if: ${{ inputs.buildArgs }}
+        id: convert_args
+        run: |
+          {
+            echo 'converted<<EOF'
+            echo "${{ inputs.buildArgs }}" | xargs -n1
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      # By defualt, build and Publish images on main, master, and versioned branches.
+      # if enableForPRs is specified, images will be built for PRs also.
+      - name: "Build and Push All Docker Images"
+        if: ${{ (needs.prepare-env.outputs.build_for_merge == 'true' || inputs.enableForPRs ) && steps.run_check.outputs.run == 'true' }}
         uses: docker/build-push-action@v6
         env:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
@@ -294,4 +314,4 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           file: ${{ inputs.dockerfile }}
-          build-args: ${{ inputs.buildArgs }}
+          build-args: ${{ steps.convert_args.outputs.converted }}
