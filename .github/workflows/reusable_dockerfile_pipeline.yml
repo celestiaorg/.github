@@ -24,7 +24,7 @@ on:
       buildArgs:
         required: false
         type: string
-        description: 'string containing a space separated list build args e.g. "TARGETOS=linux TARGETARCH=amd64"'
+        description: 'string containing a space separated list build of args e.g. "TARGETOS=linux TARGETARCH=amd64"'
         default: ""
 
 env:
