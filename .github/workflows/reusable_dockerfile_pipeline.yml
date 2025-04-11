@@ -295,7 +295,7 @@ jobs:
 
       # Build and Publish images on main, master, and versioned branches.
       - name: "Build and Push All Docker Images"
-        if: ${{ steps.run_check.outputs.run == 'true' }}
+        if: ${{ needs.prepare-env.outputs.build_for_merge == 'true' && steps.run_check.outputs.run == 'true' }}
         uses: docker/build-push-action@v6
         env:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
