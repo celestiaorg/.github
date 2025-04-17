@@ -26,6 +26,11 @@ on:
         type: string
         description: 'string containing a space separated list build of args e.g. "TARGETOS=linux TARGETARCH=amd64"'
         default: ""
+      forceBuild:
+        required: false
+        type: boolean
+        description: "Force docker build and push"
+        default: false
 
 env:
   GITHUB_REG: ghcr.io
@@ -202,7 +207,8 @@ jobs:
     # commits. The logic-check job protects us from the case of both build flags
     # being equal to true.
     if: |
-      needs.prepare-env.outputs.build_for_pr == 'true'
+      inputs.forceBuild
+      || needs.prepare-env.outputs.build_for_pr == 'true'
       || needs.prepare-env.outputs.build_for_merge == 'true'
     permissions:
       contents: write
@@ -229,7 +235,7 @@ jobs:
       - name: Check run conditions
         id: run_check
         # We only want to run when the registry is able to run on PR or if it is a merge event
-        run: echo "run=${{ matrix.registry.run-on-pr == needs.prepare-env.outputs.build_for_pr || needs.prepare-env.outputs.build_for_merge == 'true'}}" >> "$GITHUB_OUTPUT"
+        run: echo "run=${{ inputs.forceBuild || matrix.registry.run-on-pr == needs.prepare-env.outputs.build_for_pr || needs.prepare-env.outputs.build_for_merge == 'true'}}" >> "$GITHUB_OUTPUT"
 
       - name: Checkout
         if: ${{ steps.run_check.outputs.run == 'true'}}
@@ -295,7 +301,7 @@ jobs:
 
       # Build and Publish images on main, master, and versioned branches.
       - name: "Build and Push All Docker Images"
-        if: ${{ needs.prepare-env.outputs.build_for_merge == 'true' && steps.run_check.outputs.run == 'true' }}
+        if: ${{ inputs.forceBuild || needs.prepare-env.outputs.build_for_merge == 'true' && steps.run_check.outputs.run == 'true' }}
         uses: docker/build-push-action@v6
         env:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
