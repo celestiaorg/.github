@@ -153,45 +153,6 @@ jobs:
           echo "Failing step due to build_for_pr == build_for_merge"
           exit 1
 
-  # docker-security:
-  #   needs: ["prepare-env", "logic-check"]
-  #   runs-on: "ubuntu-latest"
-  #   steps:
-  #     - name: Checkout
-  #       uses: "actions/checkout@v4"
-  #       with:
-  #         ref: ${{ inputs.checkout_ref }}
-
-  #     - name: Build
-  #       uses: docker/build-push-action@v6
-  #       env:
-  #         OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
-  #         OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
-  #       with:
-  #         context: ${{ inputs.dockerContext}}
-  #         push: false
-  #         platforms: linux/amd64
-  #         # we're building the container before the scan, use the short sha tag
-  #         # for referring to it later
-  #         tags: ${{ env.OUTPUT_IMAGE_NAME }}:${{ env.OUTPUT_SHORT_SHA }}
-  #         file: ${{ inputs.dockerfile }}
-
-  # - name: Run Trivy vulnerability scanner
-  #   # source: https://github.com/aquasecurity/trivy-action
-  #   # https://github.com/marketplace/actions/aqua-security-trivy
-  #   uses: aquasecurity/trivy-action@master
-  #   env:
-  #     OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
-  #     OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
-  #   with:
-  #     # here we use the local tag that we've built before
-  #     image-ref: "${{ env.OUTPUT_IMAGE_NAME }}:${{ env.OUTPUT_SHORT_SHA }}"
-  #     format: "table"
-  #     #exit-code: '1' # uncomment to stop the CI if the scanner fails
-  #     ignore-unfixed: true
-  #     vuln-type: "os,library"
-  #     severity: "CRITICAL,HIGH"
-
   docker-build:
     name: docker-build (${{ matrix.registry.name }}; ${{ matrix.registry.registry-url }}/${{ matrix.registry.registry-owner }}/${{ needs.prepare-env.outputs.output_image_name }})
     runs-on: "ubuntu-latest"
