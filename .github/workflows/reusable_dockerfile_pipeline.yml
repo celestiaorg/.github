@@ -162,9 +162,7 @@ jobs:
     # run if both logic flags are false. This is the case for push events on PR
     # commits. The logic-check job protects us from the case of both build flags
     # being equal to true.
-    if: |
-      needs.prepare-env.outputs.build_for_pr == 'true'
-      || needs.prepare-env.outputs.build_for_merge == 'true'
+    if: needs.prepare-env.outputs.not_a_fork == 'true'
     permissions:
       contents: write
       packages: write
@@ -245,7 +243,7 @@ jobs:
         # this step converts that single line into a multi line string so it is correctly interpreted as
         # build arguments.
       - name: Convert buildArgs to newline-delimited string
-        if: ${{ inputs.buildArgs }}
+        if: ${{ inputs.buildArgs && steps.run_check.outputs.run == 'true' }}
         id: convert_args
         run: |
           {
@@ -256,13 +254,13 @@ jobs:
 
       # Build and Publish images on main, master, and versioned branches.
       - name: "Build and Push All Docker Images"
-        if: ${{ needs.prepare-env.outputs.build_for_merge == 'true' && steps.run_check.outputs.run == 'true' }}
+        if: ${{ steps.run_check.outputs.run == 'true'}}
         uses: docker/build-push-action@v6
         env:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
-          context: ${{ inputs.dockerContext}}
+          context: ${{ inputs.dockerContext }}
           platforms: linux/arm64,linux/amd64
           provenance: false
           push: true
