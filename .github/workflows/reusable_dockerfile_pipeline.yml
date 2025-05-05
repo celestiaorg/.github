@@ -26,6 +26,11 @@ on:
         type: string
         description: 'string containing a space separated list build of args e.g. "TARGETOS=linux TARGETARCH=amd64"'
         default: ""
+      runner-label:
+        required: false
+        type: string
+        description: "The runner label to use for the job"
+        default: "ubuntu-latest"
 
 env:
   GITHUB_REG: ghcr.io
@@ -34,7 +39,7 @@ env:
 
 jobs:
   prepare-env:
-    runs-on: "ubuntu-latest"
+    runs-on: ${{ inputs.runner-label || 'ubuntu-latest' }}
     outputs:
       repo_owner: ${{ steps.setting_env.outputs.repo_owner }}
       output_short_sha: ${{ steps.setting_env.outputs.short_sha }}
