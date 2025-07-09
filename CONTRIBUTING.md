@@ -112,7 +112,7 @@ All production repos have the following branch protections requirements:
 
 ## External Contributions
 
-All external contributions must reference an existing issue. If no issue exists for your proposed change, please create one and clearly explain why the change is important. Contributions that do not reference a meaningful issue, such as PRs focused solely on minor comment updates, typos, grammatical fixes, irrelevant tests updates etc, will be automatically closed.
+All external contributions must reference an existing issue. If no issue exists for your proposed change, please create one and clearly explain why the change is important. Contributions that do not reference a meaningful issue, such as PRs focused solely on minor comment updates, typos, grammatical fixes, irrelevant test updates etc, will be automatically closed.
 
 Unless you have a concrete and valuable issue to address, please refer to existing issues or those labeled as good first issue and consider contributing to them instead.
 
