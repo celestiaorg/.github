@@ -109,3 +109,13 @@ All production repos have the following branch protections requirements:
 - New commits dismiss approvals
 - Status checks must be passing
 - Conversations must be resolved
+
+## External Contributions
+
+All external contributions must reference an existing issue. If no issue exists for your proposed change, please create one and clearly explain why the change is important. Contributions that do not reference a meaningful issue, such as PRs focused solely on minor comment updates, typos, grammatical fixes, irrelevant test updates etc, will be automatically closed.
+
+Unless you have a concrete and valuable issue to address, please refer to existing issues or those labeled as good first issue and consider contributing to them instead.
+
+Note: PRs containing low-effort AI-generated content (“AI slop”) will be closed immediately, as they waste reviewers’ time. If you use AI to assist with your contribution, you are expected to carefully review and revise the output before submission. Failure to do so will result in the PR being closed without comment.
+
+These contribution guidelines help maintain a high standard of quality, streamline the review process, and ensure that maintainers can focus on impactful and relevant work.
