@@ -13,8 +13,8 @@
 * @MSevey
 
 # .github directory owners
-/.github/ @MSevey @celestiaorg/devops
+/.github/ @celestiaorg/devops
 
 # Specific file owners
-CONTRIBUTING.md @liamsi @MSevey
-SECURITY.md @liamsi @MSevey
+CONTRIBUTING.md @liamsi
+SECURITY.md @liamsi
