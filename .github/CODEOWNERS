@@ -10,7 +10,7 @@
 # are often repeated in package-level definitions.
 
 # Global Owner(s)
-* @MSevey
+* @liamsi
 
 # .github directory owners
 /.github/ @celestiaorg/devops
