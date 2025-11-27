@@ -49,7 +49,7 @@ jobs:
       not_a_fork: ${{ steps.setting_logic.outputs.not_a_fork }}
     steps:
       - name: Checkout
-        uses: "actions/checkout@v5"
+        uses: "actions/checkout@v6"
         with:
           ref: ${{ inputs.checkout_ref }}
 
@@ -197,7 +197,7 @@ jobs:
 
       - name: Checkout
         if: ${{ steps.run_check.outputs.run == 'true'}}
-        uses: "actions/checkout@v5"
+        uses: "actions/checkout@v6"
         with:
           ref: ${{ inputs.checkout_ref }}
 
