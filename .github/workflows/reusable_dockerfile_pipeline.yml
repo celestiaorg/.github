@@ -212,7 +212,7 @@ jobs:
       - name: Extract Docker Metadata
         if: ${{ steps.run_check.outputs.run == 'true'}}
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         env:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
