@@ -241,7 +241,7 @@ jobs:
 
       - name: Set up Docker Buildx
         if: ${{ steps.run_check.outputs.run == 'true'}}
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
         # the build-push-action.build-args argument expects a newline separated string.
         # when you pass a string to a re-usable workflow, it is interpreted as a single line.
