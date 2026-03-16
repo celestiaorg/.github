@@ -260,7 +260,7 @@ jobs:
       # Build and Publish images on main, master, and versioned branches.
       - name: "Build and Push All Docker Images"
         if: ${{ steps.run_check.outputs.run == 'true'}}
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         env:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
