@@ -42,7 +42,7 @@ repositories:
 
 - Issues
 - Projects
-- Perserve this repository
+- Preserve this repository
 - Allow merge commits **Forked Repos Only**
 - Allow squash merging
   - Default to pull request title
