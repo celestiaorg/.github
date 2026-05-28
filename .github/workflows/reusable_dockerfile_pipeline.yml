@@ -282,7 +282,7 @@ jobs:
         id: build
         if: ${{ steps.run_check.outputs.run == 'true'}}
         continue-on-error: true
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
         env:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
@@ -302,7 +302,7 @@ jobs:
 
       - name: "Build and Push All Docker Images (retry)"
         if: ${{ steps.run_check.outputs.run == 'true' && steps.build.outcome == 'failure' }}
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
         env:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
