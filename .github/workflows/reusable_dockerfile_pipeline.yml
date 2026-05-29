@@ -161,6 +161,10 @@ jobs:
   docker-build:
     name: docker-build (${{ matrix.registry.name }}; ${{ matrix.registry.registry-url }}/${{ matrix.registry.registry-owner }}/${{ needs.prepare-env.outputs.output_image_name }})
     runs-on: "ubuntu-latest"
+    # Multi-arch builds (linux/arm64 under QEMU emulation) are long-running.
+    # Cap the job so a hung emulated build fails in ~90 min instead of running
+    # to the 6 hour GitHub default.
+    timeout-minutes: 90
     # wait until the jobs are finished.
     needs: ["prepare-env", "logic-check"]
     # We only want to run this step if one of the build flags is true. We don't
@@ -265,9 +269,40 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       # Build and Publish images on main, master, and versioned branches.
+      #
+      # The build is wrapped with a single retry: multi-arch builds (linux/arm64
+      # runs under QEMU emulation) are long-running and occasionally fail on
+      # transient errors such as registry pull/push timeouts, `toomanyrequests`
+      # throttling, or emulation hiccups. The retry reuses the buildx layer cache
+      # so it is fast, and re-pushing layers is idempotent. wretry (used for the
+      # QEMU step above) is intentionally not used here: the `tags` and `labels`
+      # inputs are multiline strings, which wretry's `with` map does not forward
+      # correctly.
       - name: "Build and Push All Docker Images"
+        id: build
         if: ${{ steps.run_check.outputs.run == 'true'}}
-        uses: docker/build-push-action@v7
+        continue-on-error: true
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
+        env:
+          OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
+          OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
+        with:
+          context: ${{ inputs.dockerContext }}
+          platforms: linux/arm64,linux/amd64
+          provenance: false
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: ${{ inputs.dockerfile }}
+          build-args: ${{ steps.convert_args.outputs.converted }}
+
+      - name: Wait before retrying the build
+        if: ${{ steps.run_check.outputs.run == 'true' && steps.build.outcome == 'failure' }}
+        run: sleep 30
+
+      - name: "Build and Push All Docker Images (retry)"
+        if: ${{ steps.run_check.outputs.run == 'true' && steps.build.outcome == 'failure' }}
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
         env:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
