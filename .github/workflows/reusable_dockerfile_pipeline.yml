@@ -133,31 +133,6 @@ jobs:
           echo "not_a_fork=${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}" >> "$GITHUB_OUTPUT"
           # yamllint enable
 
-  # Log the key inputs to the logic as well a the outputs. We check that
-  # build_for_pr and build_for_merge are never equal when they are true as that
-  # would indicate a bug. If they are both false, this is ok, as this is the
-  # case on pushing commits to a PR.
-  logic-check:
-    needs: prepare-env
-    runs-on: "ubuntu-latest"
-    steps:
-      - name: Log logic
-        run: |
-          echo "github.event_name: ${{ github.event_name }}"
-          echo "github.ref: ${{ github.ref }}"
-          echo "head repo: ${{ github.event.pull_request.head.repo.full_name }}"
-          echo "base repo: ${{ github.event.pull_request.base.repo.full_name }}"
-          echo "build_for_pr: ${{ needs.prepare-env.outputs.build_for_pr }}"
-          echo "build_for_merge: ${{ needs.prepare-env.outputs.build_for_merge }}"
-          echo "not_a_fork: ${{ needs.prepare-env.outputs.not_a_fork }}"
-      - name: Check logic
-        if: |
-          (needs.prepare-env.outputs.build_for_pr == needs.prepare-env.outputs.build_for_merge)
-          && needs.prepare-env.outputs.build_for_pr != 'false'
-        run: |
-          echo "Failing step due to build_for_pr == build_for_merge"
-          exit 1
-
   docker-build:
     name: docker-build (${{ matrix.registry.name }}; ${{ matrix.registry.registry-url }}/${{ matrix.registry.registry-owner }}/${{ needs.prepare-env.outputs.output_image_name }})
     runs-on: "ubuntu-latest"
@@ -165,12 +140,11 @@ jobs:
     # Cap the job so a hung emulated build fails in ~90 min instead of running
     # to the 6 hour GitHub default.
     timeout-minutes: 90
-    # wait until the jobs are finished.
-    needs: ["prepare-env", "logic-check"]
-    # We only want to run this step if one of the build flags is true. We don't
-    # run if both logic flags are false. This is the case for push events on PR
-    # commits. The logic-check job protects us from the case of both build flags
-    # being equal to true.
+    needs: ["prepare-env"]
+    # Only build on non-forks. GitHub's security policies prevent forks from
+    # accessing the secrets needed to push images, so fork PRs are skipped
+    # entirely. On non-forks, the per-registry run_check step below decides
+    # which registries to build for.
     if: needs.prepare-env.outputs.not_a_fork == 'true'
     permissions:
       contents: write
